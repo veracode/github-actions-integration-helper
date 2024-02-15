@@ -38,3 +38,9 @@ export interface Sandbox {
   guid: string;
   name: string;
 }
+
+export interface SelfUserResultsData {
+  api_credentials: {
+    expiration_ts: string;
+  };
+}
