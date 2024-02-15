@@ -102,7 +102,7 @@ async function getSandboxesByApplicationGuid(
   }
 }
 
-export async function validateVeracodeApiCreds(inputs: Inputs): Promise<void> {
+export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> {
   try {
     const getSelfUserDetailsResource = {
       resourceUri: appConfig.selfUserUri,
@@ -119,6 +119,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<void> {
     } else {
       throw new Error('Invalid/Expired Veracode API ID and API Key');
     }
+    return applicationResponse?.api_credentials?.expiration_ts;
   } catch (error) {
     console.error(error);
     throw error;

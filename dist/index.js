@@ -29262,7 +29262,7 @@ async function getSandboxesByApplicationGuid(appGuid, vid, vkey) {
     }
 }
 async function validateVeracodeApiCreds(inputs) {
-    var _a;
+    var _a, _b;
     try {
         const getSelfUserDetailsResource = {
             resourceUri: app_config_1.default.selfUserUri,
@@ -29275,8 +29275,9 @@ async function validateVeracodeApiCreds(inputs) {
             core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
         }
         else {
-            throw new Error(`Invalid/Expired Veracode API ID and API Key`);
+            throw new Error('Invalid/Expired Veracode API ID and API Key');
         }
+        return (_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.api_credentials) === null || _b === void 0 ? void 0 : _b.expiration_ts;
     }
     catch (error) {
         console.error(error);
