@@ -23,7 +23,7 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
     Authorization: calculateAuthorizationHeader({
       id: vid,
       key: vkey,
-      host: appConfig.hostName,
+      host: appConfig.hostName.veracode,
       url: queryUrl,
       method: 'GET',
     }),
@@ -47,7 +47,7 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
     Authorization: calculateAuthorizationHeader({
       id: vid,
       key: vkey,
-      host: appConfig.hostName,
+      host: appConfig.hostName.veracode,
       url: queryUrl,
       method: 'DELETE',
     }),

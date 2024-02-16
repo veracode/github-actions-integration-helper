@@ -11,7 +11,7 @@ export async function getApplicationByName(
 ): Promise<VeracodeApplication.Application> {
   try {
     const getApplicationByNameResource = {
-      resourceUri: appConfig.applicationUri,
+      resourceUri: appConfig.api.veracode.applicationUri,
       queryAttribute: 'name',
       queryValue: encodeURIComponent(appname),
     };
@@ -69,7 +69,7 @@ export async function removeSandbox(inputs: Inputs): Promise<void> {
   
   try {
     const removeSandboxResource = {
-      resourceUri: appConfig.sandboxUri.replace('${appGuid}', appGuid),
+      resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
       resourceId: sandbox.guid,
     };
 
@@ -87,7 +87,7 @@ async function getSandboxesByApplicationGuid(
 ): Promise<VeracodeApplication.Sandbox[]> {
   try {
     const getSandboxesByApplicationGuidResource = {
-      resourceUri: appConfig.sandboxUri.replace('${appGuid}', appGuid),
+      resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
       queryAttribute: '',
       queryValue: '',
     };
@@ -105,7 +105,7 @@ async function getSandboxesByApplicationGuid(
 export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> {
   try {
     const getSelfUserDetailsResource = {
-      resourceUri: appConfig.selfUserUri,
+      resourceUri: appConfig.api.veracode.selfUserUri,
       queryAttribute: '',
       queryValue: '',
     };
@@ -129,7 +129,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
 export async function validatePolicyName(inputs: Inputs): Promise<void> {
   try {
     const getPolicyResource = {
-      resourceUri: appConfig.policyUri,
+      resourceUri: appConfig.api.veracode.policyUri,
       queryAttribute: 'name',
       queryValue: encodeURIComponent(inputs.policyname),
     };

@@ -28863,7 +28863,7 @@ async function getResourceByAttribute(vid, vkey, resource) {
         Authorization: (0, veracode_hmac_1.calculateAuthorizationHeader)({
             id: vid,
             key: vkey,
-            host: app_config_1.default.hostName,
+            host: app_config_1.default.hostName.veracode,
             url: queryUrl,
             method: 'GET',
         }),
@@ -28887,7 +28887,7 @@ async function deleteResourceById(vid, vkey, resource) {
         Authorization: (0, veracode_hmac_1.calculateAuthorizationHeader)({
             id: vid,
             key: vkey,
-            host: app_config_1.default.hostName,
+            host: app_config_1.default.hostName.veracode,
             url: queryUrl,
             method: 'DELETE',
         }),
@@ -28985,12 +28985,20 @@ exports.calculateAuthorizationHeader = calculateAuthorizationHeader;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const appConfig = {
-    hostName: 'api.veracode.com',
-    applicationUri: '/appsec/v1/applications',
-    findingsUri: '/appsec/v2/applications',
-    sandboxUri: '/appsec/v1/applications/${appGuid}/sandboxes',
-    selfUserUri: '/api/authn/v2/users/self',
-    policyUri: '/appsec/v1/policies'
+    hostName: {
+        veracode: 'api.veracode.com',
+        github: 'api.github.com'
+    },
+    api: {
+        veracode: {
+            applicationUri: '/appsec/v1/applications',
+            findingsUri: '/appsec/v2/applications',
+            sandboxUri: '/appsec/v1/applications/${appGuid}/sandboxes',
+            selfUserUri: '/api/authn/v2/users/self',
+            policyUri: '/appsec/v1/policies'
+        },
+        github: ''
+    }
 };
 exports["default"] = appConfig;
 
@@ -29197,7 +29205,7 @@ async function getApplicationByName(appname, vid, vkey) {
     var _a;
     try {
         const getApplicationByNameResource = {
-            resourceUri: app_config_1.default.applicationUri,
+            resourceUri: app_config_1.default.api.veracode.applicationUri,
             queryAttribute: 'name',
             queryValue: encodeURIComponent(appname),
         };
@@ -29248,7 +29256,7 @@ async function removeSandbox(inputs) {
     }
     try {
         const removeSandboxResource = {
-            resourceUri: app_config_1.default.sandboxUri.replace('${appGuid}', appGuid),
+            resourceUri: app_config_1.default.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
             resourceId: sandbox.guid,
         };
         await http.deleteResourceById(vid, vkey, removeSandboxResource);
@@ -29263,7 +29271,7 @@ async function getSandboxesByApplicationGuid(appGuid, vid, vkey) {
     var _a;
     try {
         const getSandboxesByApplicationGuidResource = {
-            resourceUri: app_config_1.default.sandboxUri.replace('${appGuid}', appGuid),
+            resourceUri: app_config_1.default.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
             queryAttribute: '',
             queryValue: '',
         };
@@ -29279,7 +29287,7 @@ async function validateVeracodeApiCreds(inputs) {
     var _a, _b;
     try {
         const getSelfUserDetailsResource = {
-            resourceUri: app_config_1.default.selfUserUri,
+            resourceUri: app_config_1.default.api.veracode.selfUserUri,
             queryAttribute: '',
             queryValue: '',
         };
@@ -29303,7 +29311,7 @@ async function validatePolicyName(inputs) {
     var _a;
     try {
         const getPolicyResource = {
-            resourceUri: app_config_1.default.policyUri,
+            resourceUri: app_config_1.default.api.veracode.policyUri,
             queryAttribute: 'name',
             queryValue: encodeURIComponent(inputs.policyname),
         };
@@ -29385,7 +29393,7 @@ const app_config_1 = __importDefault(__nccwpck_require__(5409));
 const http = __importStar(__nccwpck_require__(963));
 async function getApplicationFindings(appGuid, vid, vkey) {
     const getPolicyFindingsByApplicationResource = {
-        resourceUri: `${app_config_1.default.findingsUri}/${appGuid}/findings`,
+        resourceUri: `${app_config_1.default.api.veracode.findingsUri}/${appGuid}/findings`,
         queryAttribute: 'size',
         queryValue: '1000',
     };
