@@ -29107,7 +29107,7 @@ async function run() {
             await applicationService.validateVeracodeApiCreds(inputs);
             break;
         default:
-            core.setFailed(`Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox.`);
+            core.setFailed(`Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds.`);
     }
 }
 exports.run = run;
