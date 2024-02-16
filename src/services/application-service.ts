@@ -138,9 +138,10 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       await http.getResourceByAttribute<VeracodeApplication.policyResultsData>(inputs.vid, inputs.vkey, getPolicyResource);
 
     core.info(`API Response - ${applicationResponse}`);
-    if (applicationResponse.page.total_elements != 1) {
+    if (applicationResponse?.page?.total_elements != 1) {
       core.setFailed('Invalid Policy name');
     }
+    core.setOutput('total_elements', applicationResponse?.page?.total_elements);
   } catch (error) {
     console.error(error);
     throw error;
