@@ -28989,7 +28989,8 @@ const appConfig = {
     applicationUri: '/appsec/v1/applications',
     findingsUri: '/appsec/v2/applications',
     sandboxUri: '/appsec/v1/applications/${appGuid}/sandboxes',
-    selfUserUri: '/api/authn/v2/users/self'
+    selfUserUri: '/api/authn/v2/users/self',
+    policyUri: '/appsec/v1/policies'
 };
 exports["default"] = appConfig;
 
@@ -29002,7 +29003,7 @@ exports["default"] = appConfig;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.vaildateRemoveSandboxInput = exports.vaildateScanResultsActionInput = exports.parseInputs = exports.Actions = void 0;
+exports.ValidatePolicyName = exports.vaildateRemoveSandboxInput = exports.vaildateScanResultsActionInput = exports.parseInputs = exports.Actions = void 0;
 var Actions;
 (function (Actions) {
     Actions["GetPolicyNameByProfileName"] = "getPolicyNameByProfileName";
@@ -29010,6 +29011,7 @@ var Actions;
     Actions["PreparePolicyResults"] = "preparePolicyResults";
     Actions["RemoveSandbox"] = "removeSandbox";
     Actions["ValidateVeracodeApiCreds"] = "validateVeracodeApiCreds";
+    Actions["ValidatePolicyName"] = "validatePolicyName";
 })(Actions || (exports.Actions = Actions = {}));
 const parseInputs = (getInput) => {
     const action = getInput('action', { required: true });
@@ -29025,11 +29027,12 @@ const parseInputs = (getInput) => {
     const fail_checks_on_policy = getInput('fail_checks_on_policy') === 'true';
     const fail_checks_on_error = getInput('fail_checks_on_error') === 'true';
     const sandboxname = getInput('sandboxname');
+    const policyname = getInput('policyname');
     if (source_repository && source_repository.split('/').length !== 2) {
         throw new Error('source_repository needs to be in the {owner}/{repo} format');
     }
     return { action, token, check_run_id: +check_run_id, vid, vkey, appname,
-        source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname };
+        source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname, policyname };
 };
 exports.parseInputs = parseInputs;
 const vaildateScanResultsActionInput = (inputs) => {
@@ -29048,6 +29051,14 @@ const vaildateRemoveSandboxInput = (inputs) => {
     return true;
 };
 exports.vaildateRemoveSandboxInput = vaildateRemoveSandboxInput;
+const ValidatePolicyName = (inputs) => {
+    console.log(inputs);
+    if (!inputs.policyname) {
+        return false;
+    }
+    return true;
+};
+exports.ValidatePolicyName = ValidatePolicyName;
 
 
 /***/ }),
@@ -29105,6 +29116,9 @@ async function run() {
             break;
         case 'validateVeracodeApiCreds':
             await applicationService.validateVeracodeApiCreds(inputs);
+            break;
+        case 'validatePolicyName':
+            await applicationService.validatePolicyName(inputs);
             break;
         default:
             core.setFailed(`Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds.`);
@@ -29174,7 +29188,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.validateVeracodeApiCreds = exports.removeSandbox = exports.getApplicationByName = void 0;
+exports.validatePolicyName = exports.validateVeracodeApiCreds = exports.removeSandbox = exports.getApplicationByName = void 0;
 const core = __importStar(__nccwpck_require__(2619));
 const app_config_1 = __importDefault(__nccwpck_require__(5409));
 const http = __importStar(__nccwpck_require__(963));
@@ -29285,6 +29299,27 @@ async function validateVeracodeApiCreds(inputs) {
     }
 }
 exports.validateVeracodeApiCreds = validateVeracodeApiCreds;
+async function validatePolicyName(inputs) {
+    try {
+        const getPolicyResource = {
+            resourceUri: app_config_1.default.policyUri,
+            queryAttribute: 'name',
+            queryValue: encodeURIComponent(inputs.policyname),
+        };
+        const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
+        core.info(`API Response - ${applicationResponse}`);
+        if (applicationResponse.page.total_elements == 1) {
+            core.info(`Policy name found with name ${inputs.policyname}`);
+            return true;
+        }
+        return false;
+    }
+    catch (error) {
+        console.error(error);
+        throw error;
+    }
+}
+exports.validatePolicyName = validatePolicyName;
 
 
 /***/ }),

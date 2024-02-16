@@ -125,3 +125,26 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
     throw error;
   }
 }
+
+export async function validatePolicyName(inputs: Inputs): Promise<boolean> {
+  try {
+    const getPolicyResource = {
+      resourceUri: appConfig.policyUri,
+      queryAttribute: 'name',
+      queryValue: encodeURIComponent(inputs.policyname),
+    };
+
+    const applicationResponse: VeracodeApplication.policyResultsData =
+      await http.getResourceByAttribute<VeracodeApplication.policyResultsData>(inputs.vid, inputs.vkey, getPolicyResource);
+
+    core.info(`API Response - ${applicationResponse}`);
+    if (applicationResponse.page.total_elements == 1) {
+      core.info(`Policy name found with name ${inputs.policyname}`);
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+}

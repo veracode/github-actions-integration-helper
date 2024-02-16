@@ -38,4 +38,10 @@ export interface SelfUserResultsData {
         expiration_ts: string;
     };
 }
+export interface policyResultsData {
+    page: {
+        size: number;
+        total_elements: number;
+    };
+}
 export {};

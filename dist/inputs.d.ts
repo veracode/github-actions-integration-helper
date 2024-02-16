@@ -5,7 +5,8 @@ export declare enum Actions {
     PreparePipelineResults = "preparePipelineResults",
     PreparePolicyResults = "preparePolicyResults",
     RemoveSandbox = "removeSandbox",
-    ValidateVeracodeApiCreds = "validateVeracodeApiCreds"
+    ValidateVeracodeApiCreds = "validateVeracodeApiCreds",
+    ValidatePolicyName = "validatePolicyName"
 }
 export type Inputs = {
     action: Actions;
@@ -18,8 +19,10 @@ export type Inputs = {
     fail_checks_on_policy: boolean;
     fail_checks_on_error: boolean;
     sandboxname: string;
+    policyname: string;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;
 export declare const vaildateRemoveSandboxInput: (inputs: Inputs) => boolean;
+export declare const ValidatePolicyName: (inputs: Inputs) => boolean;
 export {};

@@ -3,3 +3,4 @@ import { Inputs } from '../inputs';
 export declare function getApplicationByName(appname: string, vid: string, vkey: string): Promise<VeracodeApplication.Application>;
 export declare function removeSandbox(inputs: Inputs): Promise<void>;
 export declare function validateVeracodeApiCreds(inputs: Inputs): Promise<string>;
+export declare function validatePolicyName(inputs: Inputs): Promise<boolean>;

@@ -4,6 +4,7 @@ interface AppConfig {
   findingsUri: string;
   sandboxUri: string;
   selfUserUri: string;
+  policyUri: string;
 }
 
 const appConfig: AppConfig = {
@@ -11,7 +12,8 @@ const appConfig: AppConfig = {
   applicationUri: '/appsec/v1/applications',
   findingsUri: '/appsec/v2/applications',
   sandboxUri: '/appsec/v1/applications/${appGuid}/sandboxes',
-  selfUserUri: '/api/authn/v2/users/self'
+  selfUserUri: '/api/authn/v2/users/self',
+  policyUri: '/appsec/v1/policies'
 };
 
 export default appConfig;
