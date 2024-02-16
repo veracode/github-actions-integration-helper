@@ -29121,7 +29121,7 @@ async function run() {
             await applicationService.validatePolicyName(inputs);
             break;
         default:
-            core.setFailed(`Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds.`);
+            core.setFailed(`Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds, validatePolicyName.`);
     }
 }
 exports.run = run;
@@ -29308,11 +29308,9 @@ async function validatePolicyName(inputs) {
         };
         const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
         core.info(`API Response - ${applicationResponse}`);
-        if (applicationResponse.page.total_elements == 1) {
-            core.info(`Policy name found with name ${inputs.policyname}`);
-            return true;
+        if (applicationResponse.page.total_elements != 1) {
+            core.setFailed('Invalid Policy name');
         }
-        return false;
     }
     catch (error) {
         console.error(error);
