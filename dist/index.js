@@ -29300,7 +29300,7 @@ async function validateVeracodeApiCreds(inputs) {
 }
 exports.validateVeracodeApiCreds = validateVeracodeApiCreds;
 async function validatePolicyName(inputs) {
-    var _a, _b;
+    var _a;
     try {
         const getPolicyResource = {
             resourceUri: app_config_1.default.policyUri,
@@ -29309,10 +29309,7 @@ async function validatePolicyName(inputs) {
         };
         const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
         core.info(`API Response - ${applicationResponse}`);
-        if (((_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements) != 1) {
-            core.setFailed('Invalid Policy name');
-        }
-        core.setOutput('total_elements', (_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements);
+        core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
     }
     catch (error) {
         console.error(error);
