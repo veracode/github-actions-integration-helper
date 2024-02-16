@@ -29275,7 +29275,7 @@ async function validateVeracodeApiCreds(inputs) {
             core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
         }
         else {
-            throw new Error('Invalid/Expired Veracode API ID and API Key');
+            core.setFailed('Invalid/Expired Veracode API ID and API Key');
         }
         return (_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.api_credentials) === null || _b === void 0 ? void 0 : _b.expiration_ts;
     }
