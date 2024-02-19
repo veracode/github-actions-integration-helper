@@ -4,7 +4,8 @@ export declare enum Actions {
     GetPolicyNameByProfileName = "getPolicyNameByProfileName",
     PreparePipelineResults = "preparePipelineResults",
     PreparePolicyResults = "preparePolicyResults",
-    RemoveSandbox = "removeSandbox"
+    RemoveSandbox = "removeSandbox",
+    ValidateVeracodeApiCreds = "validateVeracodeApiCreds"
 }
 export type Inputs = {
     action: Actions;

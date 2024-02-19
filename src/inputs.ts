@@ -7,6 +7,7 @@ export enum Actions {
   PreparePipelineResults = 'preparePipelineResults',
   PreparePolicyResults = 'preparePolicyResults',
   RemoveSandbox = 'removeSandbox',
+  ValidateVeracodeApiCreds = 'validateVeracodeApiCreds',
 }
 
 export type Inputs = {

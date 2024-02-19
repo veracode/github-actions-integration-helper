@@ -3,6 +3,7 @@ interface AppConfig {
   applicationUri: string;
   findingsUri: string;
   sandboxUri: string;
+  selfUserUri: string;
 }
 
 const appConfig: AppConfig = {
@@ -10,6 +11,7 @@ const appConfig: AppConfig = {
   applicationUri: '/appsec/v1/applications',
   findingsUri: '/appsec/v2/applications',
   sandboxUri: '/appsec/v1/applications/${appGuid}/sandboxes',
+  selfUserUri: '/api/authn/v2/users/self'
 };
 
 export default appConfig;

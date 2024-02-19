@@ -24,9 +24,12 @@ export async function run(): Promise<void> {
     case 'removeSandbox':
       await applicationService.removeSandbox(inputs);
       break;
+    case 'validateVeracodeApiCreds':
+      await applicationService.validateVeracodeApiCreds(inputs);
+      break;
     default:
       core.setFailed(
-        `Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox.`,
+        `Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds.`,
       );
   }
 }
