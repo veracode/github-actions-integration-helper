@@ -29323,7 +29323,7 @@ async function validateVeracodeApiCreds(inputs) {
             queryValue: '',
         };
         const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
-        core.info(`API Response - ${applicationResponse}`);
+        core.info(`API Response - ${JSON.stringify(applicationResponse)}`);
         if (applicationResponse && ((_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.api_credentials) === null || _a === void 0 ? void 0 : _a.expiration_ts)) {
             core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
         }

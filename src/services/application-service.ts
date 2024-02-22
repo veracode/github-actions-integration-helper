@@ -132,7 +132,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
     const applicationResponse: VeracodeApplication.SelfUserResultsData =
       await http.getResourceByAttribute<VeracodeApplication.SelfUserResultsData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
 
-    core.info(`API Response - ${applicationResponse}`);
+    core.info(`API Response - ${JSON.stringify(applicationResponse)}`);
     if (applicationResponse && applicationResponse?.api_credentials?.expiration_ts) {
       core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
     } else {
