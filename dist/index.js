@@ -29296,6 +29296,7 @@ async function getSandboxesByApplicationGuid(appGuid, vid, vkey) {
 }
 async function validateVeracodeApiCreds(inputs) {
     var _a, _b;
+    const annotations = [];
     const repo = inputs.source_repository.split('/');
     const ownership = {
         owner: repo[0],
@@ -29323,7 +29324,12 @@ async function validateVeracodeApiCreds(inputs) {
         }
         else {
             core.setFailed('Invalid/Expired Veracode API ID and API Key');
-            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], 'Invalid/Expired Veracode API ID and API Key.');
+            annotations.push({
+                annotation_level: 'error',
+                title: 'Invalid/Expired Veracode API ID and API Key',
+                message: 'Please configure the valid VERACODE_API_ID and VERACODE_API_KEY.',
+            });
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Invalid/Expired Veracode API ID and API Key.');
         }
         return (_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.api_credentials) === null || _b === void 0 ? void 0 : _b.expiration_ts;
     }

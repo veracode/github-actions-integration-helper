@@ -15,9 +15,9 @@ export enum Status {
 }
 
 export interface Annotation {
-  path: string;
-  start_line: number;
-  end_line: number;
+  path?: string;
+  start_line?: number;
+  end_line?: number;
   annotation_level: string;
   title: string;
   message: string;

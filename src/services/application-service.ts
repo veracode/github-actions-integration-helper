@@ -106,6 +106,7 @@ async function getSandboxesByApplicationGuid(
 }
 
 export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> {
+  const annotations: Checks.Annotation[] = [];
   const repo = inputs.source_repository.split('/');
   const ownership = {
     owner: repo[0],
@@ -137,11 +138,16 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
       core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
     } else {
       core.setFailed('Invalid/Expired Veracode API ID and API Key');
+      annotations.push({
+        annotation_level: 'error',
+        title: 'Invalid/Expired Veracode API ID and API Key',
+        message: 'Please configure the valid VERACODE_API_ID and VERACODE_API_KEY.',
+      });
       await updateChecks(
         octokit,
         checkStatic,
         Checks.Conclusion.Failure,
-        [],
+        annotations,
         'Invalid/Expired Veracode API ID and API Key.',
       );
     }
