@@ -198,7 +198,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
 
     core.info(`API Response - ${JSON.stringify(applicationResponse)}`);
     core.setOutput('total_elements', applicationResponse?.page?.total_elements);
-    if (applicationResponse?.page?.total_elements && applicationResponse?.page?.total_elements != 1) {
+    if (applicationResponse?.page?.total_elements && applicationResponse?.page?.total_elements == 0) {
       await updateChecks(
         octokit,
         checkStatic,
@@ -209,6 +209,8 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       if (inputs.break_build_policy_findings == true) {
         core.setFailed('Invalid Veracode Policy name.')
       }
+    } else {
+      core.info(`Valid policy name - ${applicationResponse?.page?.total_elements} - Is count equal to 1 ? ${(applicationResponse?.page?.total_elements == 1)}`);
     }
   } catch (error) {
     core.debug(`Error while validating invalid policy name: ${error}`);
