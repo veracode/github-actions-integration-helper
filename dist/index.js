@@ -28868,7 +28868,7 @@ async function getResourceByAttribute(vid, vkey, resource) {
             method: 'GET',
         }),
     };
-    const appUrl = `https://${app_config_1.default.hostName}${resourceUri}${urlQueryParams}`;
+    const appUrl = `https://${app_config_1.default.hostName.github}${resourceUri}${urlQueryParams}`;
     try {
         const response = await fetch(appUrl, { headers });
         const data = await response.json();
@@ -28892,13 +28892,13 @@ async function deleteResourceById(vid, vkey, resource) {
             method: 'DELETE',
         }),
     };
-    const appUrl = `https://${app_config_1.default.hostName}${resourceUri}/${resourceId}`;
+    const appUrl = `https://${app_config_1.default.hostName.github}${resourceUri}/${resourceId}`;
     try {
         await fetch(appUrl, { method: 'DELETE', headers });
     }
     catch (error) {
         console.log(error);
-        throw new Error('Failed to delete resource.');
+        throw new Error(`Failed to delete resource: ${error}`);
     }
 }
 exports.deleteResourceById = deleteResourceById;
