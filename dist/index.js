@@ -29372,7 +29372,7 @@ async function validatePolicyName(inputs) {
             message: 'Please check the policy name provided in the veracode.yml',
         });
         const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
-        core.info(`API Response - ${applicationResponse}`);
+        core.info(`API Response - ${JSON.stringify(applicationResponse)}`);
         core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
         if (((_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements) && ((_c = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _c === void 0 ? void 0 : _c.total_elements) != 1) {
             await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Please review and ensure the accuracy of the Policy Name specified in your veracode.yml file.');
