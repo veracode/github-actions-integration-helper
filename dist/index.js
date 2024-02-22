@@ -29011,7 +29011,7 @@ exports["default"] = appConfig;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.ValidatePolicyName = exports.vaildateRemoveSandboxInput = exports.vaildateScanResultsActionInput = exports.parseInputs = exports.Actions = void 0;
+exports.ValidateVeracodeApiCreds = exports.ValidatePolicyName = exports.vaildateRemoveSandboxInput = exports.vaildateScanResultsActionInput = exports.parseInputs = exports.Actions = void 0;
 var Actions;
 (function (Actions) {
     Actions["GetPolicyNameByProfileName"] = "getPolicyNameByProfileName";
@@ -29067,6 +29067,14 @@ const ValidatePolicyName = (inputs) => {
     return true;
 };
 exports.ValidatePolicyName = ValidatePolicyName;
+const ValidateVeracodeApiCreds = (inputs) => {
+    console.log(inputs);
+    if (!inputs.token || !inputs.check_run_id || !inputs.source_repository) {
+        return false;
+    }
+    return true;
+};
+exports.ValidateVeracodeApiCreds = ValidateVeracodeApiCreds;
 
 
 /***/ }),
@@ -29199,6 +29207,9 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.validatePolicyName = exports.validateVeracodeApiCreds = exports.removeSandbox = exports.getApplicationByName = void 0;
 const core = __importStar(__nccwpck_require__(2619));
 const app_config_1 = __importDefault(__nccwpck_require__(5409));
+const rest_1 = __nccwpck_require__(8229);
+const Checks = __importStar(__nccwpck_require__(5523));
+const check_service_1 = __nccwpck_require__(6616);
 const http = __importStar(__nccwpck_require__(963));
 const inputs_1 = __nccwpck_require__(6325);
 async function getApplicationByName(appname, vid, vkey) {
@@ -29285,6 +29296,20 @@ async function getSandboxesByApplicationGuid(appGuid, vid, vkey) {
 }
 async function validateVeracodeApiCreds(inputs) {
     var _a, _b;
+    const repo = inputs.source_repository.split('/');
+    const ownership = {
+        owner: repo[0],
+        repo: repo[1],
+    };
+    const octokit = new rest_1.Octokit({
+        auth: inputs.token,
+    });
+    const checkStatic = {
+        owner: ownership.owner,
+        repo: ownership.repo,
+        check_run_id: inputs.check_run_id,
+        status: Checks.Status.Completed,
+    };
     try {
         const getSelfUserDetailsResource = {
             resourceUri: app_config_1.default.api.veracode.selfUserUri,
@@ -29298,11 +29323,13 @@ async function validateVeracodeApiCreds(inputs) {
         }
         else {
             core.setFailed('Invalid/Expired Veracode API ID and API Key');
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], 'Invalid/Expired Veracode API ID and API Key.');
         }
         return (_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.api_credentials) === null || _b === void 0 ? void 0 : _b.expiration_ts;
     }
     catch (error) {
-        console.error(error);
+        core.debug(`Error while validating Veracode API credentials: ${error}`);
+        await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], 'Error while validating Veracode API credentials.');
         throw error;
     }
 }
@@ -29320,7 +29347,7 @@ async function validatePolicyName(inputs) {
         core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
     }
     catch (error) {
-        console.error(error);
+        core.debug(`Error while validating invalid policy name: ${error}`);
         throw error;
     }
 }

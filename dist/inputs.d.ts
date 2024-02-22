@@ -25,4 +25,5 @@ export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;
 export declare const vaildateRemoveSandboxInput: (inputs: Inputs) => boolean;
 export declare const ValidatePolicyName: (inputs: Inputs) => boolean;
+export declare const ValidateVeracodeApiCreds: (inputs: Inputs) => boolean;
 export {};

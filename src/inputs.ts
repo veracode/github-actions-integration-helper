@@ -79,3 +79,11 @@ export const ValidatePolicyName = (inputs: Inputs): boolean => {
   }
   return true;
 }
+
+export const ValidateVeracodeApiCreds = (inputs: Inputs): boolean => {
+  console.log(inputs);
+  if (!inputs.token || !inputs.check_run_id || !inputs.source_repository) {
+    return false;
+  }
+  return true;
+}

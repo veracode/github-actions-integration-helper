@@ -1,5 +1,8 @@
 import * as core from '@actions/core';
 import appConfig from '../app-config';
+import { Octokit } from '@octokit/rest';
+import * as Checks from '../namespaces/Checks';
+import { updateChecks } from './check-service';
 import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
 import { Inputs, vaildateRemoveSandboxInput } from '../inputs';
@@ -103,6 +106,22 @@ async function getSandboxesByApplicationGuid(
 }
 
 export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> {
+  const repo = inputs.source_repository.split('/');
+  const ownership = {
+    owner: repo[0],
+    repo: repo[1],
+  };
+
+  const octokit = new Octokit({
+    auth: inputs.token,
+  });
+
+  const checkStatic: Checks.ChecksStatic = {
+    owner: ownership.owner,
+    repo: ownership.repo,
+    check_run_id: inputs.check_run_id,
+    status: Checks.Status.Completed,
+  };
   try {
     const getSelfUserDetailsResource = {
       resourceUri: appConfig.api.veracode.selfUserUri,
@@ -118,10 +137,24 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
       core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
     } else {
       core.setFailed('Invalid/Expired Veracode API ID and API Key');
+      await updateChecks(
+        octokit,
+        checkStatic,
+        Checks.Conclusion.Failure,
+        [],
+        'Invalid/Expired Veracode API ID and API Key.',
+      );
     }
     return applicationResponse?.api_credentials?.expiration_ts;
   } catch (error) {
-    console.error(error);
+    core.debug(`Error while validating Veracode API credentials: ${error}`);
+    await updateChecks(
+      octokit,
+      checkStatic,
+      Checks.Conclusion.Failure,
+      [],
+      'Error while validating Veracode API credentials.',
+    );
     throw error;
   }
 }
@@ -140,7 +173,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
     core.info(`API Response - ${applicationResponse}`);
     core.setOutput('total_elements', applicationResponse?.page?.total_elements);
   } catch (error) {
-    console.error(error);
+    core.debug(`Error while validating invalid policy name: ${error}`);
     throw error;
   }
 }
