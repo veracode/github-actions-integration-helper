@@ -29323,7 +29323,6 @@ async function validateVeracodeApiCreds(inputs) {
             queryValue: '',
         };
         const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
-        core.info(`API Response - ${JSON.stringify(applicationResponse)}`);
         if (applicationResponse && ((_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.api_credentials) === null || _a === void 0 ? void 0 : _a.expiration_ts)) {
             core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
         }
@@ -29369,13 +29368,12 @@ async function validatePolicyName(inputs) {
             end_line: inputs.end_line,
             annotation_level: 'failure',
             title: 'Invalid Veracode Policy name',
-            message: 'Please check the policy name provided in the veracode.yml',
+            message: 'Please check the policy name provided in the config file.',
         });
         const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
-        core.info(`API Response - ${JSON.stringify(applicationResponse)}`);
         core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
         if (applicationResponse && ((_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements) != 1) {
-            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Please review and ensure the accuracy of the Policy Name specified in your veracode.yml file.');
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Please check the policy name provided in the config file.');
             if (inputs.break_build_policy_findings == true) {
                 core.setFailed('Invalid Veracode Policy name.');
             }

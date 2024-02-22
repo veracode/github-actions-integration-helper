@@ -132,7 +132,6 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
     const applicationResponse: VeracodeApplication.SelfUserResultsData =
       await http.getResourceByAttribute<VeracodeApplication.SelfUserResultsData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
 
-    core.info(`API Response - ${JSON.stringify(applicationResponse)}`);
     if (applicationResponse && applicationResponse?.api_credentials?.expiration_ts) {
       core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
     } else {
@@ -190,13 +189,12 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       end_line: inputs.end_line,
       annotation_level: 'failure',
       title: 'Invalid Veracode Policy name',
-      message: 'Please check the policy name provided in the veracode.yml',
+      message: 'Please check the policy name provided in the config file.',
     });
 
     const applicationResponse: VeracodeApplication.policyResultsData =
       await http.getResourceByAttribute<VeracodeApplication.policyResultsData>(inputs.vid, inputs.vkey, getPolicyResource);
 
-    core.info(`API Response - ${JSON.stringify(applicationResponse)}`);
     core.setOutput('total_elements', applicationResponse?.page?.total_elements);
     if (applicationResponse && applicationResponse?.page?.total_elements != 1) {
       await updateChecks(
@@ -204,7 +202,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
         checkStatic,
         Checks.Conclusion.Failure,
         annotations,
-        'Please review and ensure the accuracy of the Policy Name specified in your veracode.yml file.',
+        'Please check the policy name provided in the config file.',
       );
       if (inputs.break_build_policy_findings == true) {
         core.setFailed('Invalid Veracode Policy name.')
