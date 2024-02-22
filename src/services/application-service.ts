@@ -139,7 +139,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
     } else {
       core.setFailed('Invalid/Expired Veracode API ID and API Key');
       annotations.push({
-        annotation_level: 'error',
+        annotation_level: 'failure',
         title: 'Invalid/Expired Veracode API ID and API Key',
         message: 'Please configure the valid VERACODE_API_ID and VERACODE_API_KEY.',
       });
