@@ -208,6 +208,8 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       );
       if (inputs.break_build_policy_findings == true) {
         core.setFailed('Invalid Veracode Policy name.')
+      } else {
+        core.error('Invalid Veracode Policy name.')
       }
     }
   } catch (error) {

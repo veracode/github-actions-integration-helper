@@ -29379,6 +29379,9 @@ async function validatePolicyName(inputs) {
             if (inputs.break_build_policy_findings == true) {
                 core.setFailed('Invalid Veracode Policy name.');
             }
+            else {
+                core.error('Invalid Veracode Policy name.');
+            }
         }
     }
     catch (error) {
