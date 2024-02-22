@@ -29341,7 +29341,7 @@ async function validateVeracodeApiCreds(inputs) {
 }
 exports.validateVeracodeApiCreds = validateVeracodeApiCreds;
 async function validatePolicyName(inputs) {
-    var _a, _b, _c, _d, _e;
+    var _a, _b;
     const annotations = [];
     const repo = inputs.source_repository.split('/');
     const ownership = {
@@ -29374,14 +29374,11 @@ async function validatePolicyName(inputs) {
         const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
         core.info(`API Response - ${JSON.stringify(applicationResponse)}`);
         core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
-        if (((_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements) && ((_c = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _c === void 0 ? void 0 : _c.total_elements) == 0) {
+        if (applicationResponse && ((_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements) != 1) {
             await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Please review and ensure the accuracy of the Policy Name specified in your veracode.yml file.');
             if (inputs.break_build_policy_findings == true) {
                 core.setFailed('Invalid Veracode Policy name.');
             }
-        }
-        else {
-            core.info(`Valid policy name - ${(_d = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _d === void 0 ? void 0 : _d.total_elements} - Is count equal to 1 ? ${(((_e = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _e === void 0 ? void 0 : _e.total_elements) == 1)}`);
         }
     }
     catch (error) {
