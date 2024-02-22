@@ -29036,11 +29036,17 @@ const parseInputs = (getInput) => {
     const fail_checks_on_error = getInput('fail_checks_on_error') === 'true';
     const sandboxname = getInput('sandboxname');
     const policyname = getInput('policyname');
+    const path = getInput('path');
+    const start_line = getInput('start_line');
+    const end_line = getInput('end_line');
+    const break_build_policy_findings = getInput('break_build_policy_findings') === 'true';
     if (source_repository && source_repository.split('/').length !== 2) {
         throw new Error('source_repository needs to be in the {owner}/{repo} format');
     }
     return { action, token, check_run_id: +check_run_id, vid, vkey, appname,
-        source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname, policyname };
+        source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname,
+        policyname, path, start_line: +start_line, end_line: +end_line, break_build_policy_findings
+    };
 };
 exports.parseInputs = parseInputs;
 const vaildateScanResultsActionInput = (inputs) => {
@@ -29061,7 +29067,7 @@ const vaildateRemoveSandboxInput = (inputs) => {
 exports.vaildateRemoveSandboxInput = vaildateRemoveSandboxInput;
 const ValidatePolicyName = (inputs) => {
     console.log(inputs);
-    if (!inputs.policyname) {
+    if (!inputs.policyname || inputs.path || inputs.start_line || inputs.end_line || inputs.break_build_policy_findings) {
         return false;
     }
     return true;
@@ -29335,19 +29341,49 @@ async function validateVeracodeApiCreds(inputs) {
 }
 exports.validateVeracodeApiCreds = validateVeracodeApiCreds;
 async function validatePolicyName(inputs) {
-    var _a;
+    var _a, _b, _c;
+    const annotations = [];
+    const repo = inputs.source_repository.split('/');
+    const ownership = {
+        owner: repo[0],
+        repo: repo[1],
+    };
+    const octokit = new rest_1.Octokit({
+        auth: inputs.token,
+    });
+    const checkStatic = {
+        owner: ownership.owner,
+        repo: ownership.repo,
+        check_run_id: inputs.check_run_id,
+        status: Checks.Status.Completed,
+    };
     try {
         const getPolicyResource = {
             resourceUri: app_config_1.default.api.veracode.policyUri,
             queryAttribute: 'name',
             queryValue: encodeURIComponent(inputs.policyname),
         };
+        annotations.push({
+            path: inputs.path,
+            start_line: inputs.start_line,
+            end_line: inputs.end_line,
+            annotation_level: 'failure',
+            title: 'Invalid Veracode Policy name',
+            message: 'Please check the policy name provided in the veracode.yml',
+        });
         const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
         core.info(`API Response - ${applicationResponse}`);
         core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
+        if (((_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements) && ((_c = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _c === void 0 ? void 0 : _c.total_elements) != 1) {
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Please review and ensure the accuracy of the Policy Name specified in your veracode.yml file.');
+            if (inputs.break_build_policy_findings == true) {
+                core.setFailed('Invalid Veracode Policy name.');
+            }
+        }
     }
     catch (error) {
         core.debug(`Error while validating invalid policy name: ${error}`);
+        await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], 'Error while validating policy name.');
         throw error;
     }
 }

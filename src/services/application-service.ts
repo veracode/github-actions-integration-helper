@@ -160,6 +160,23 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
 }
 
 export async function validatePolicyName(inputs: Inputs): Promise<void> {
+  const annotations: Checks.Annotation[] = [];
+  const repo = inputs.source_repository.split('/');
+  const ownership = {
+    owner: repo[0],
+    repo: repo[1],
+  };
+
+  const octokit = new Octokit({
+    auth: inputs.token,
+  });
+
+  const checkStatic: Checks.ChecksStatic = {
+    owner: ownership.owner,
+    repo: ownership.repo,
+    check_run_id: inputs.check_run_id,
+    status: Checks.Status.Completed,
+  };
   try {
     const getPolicyResource = {
       resourceUri: appConfig.api.veracode.policyUri,
@@ -167,13 +184,41 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       queryValue: encodeURIComponent(inputs.policyname),
     };
 
+    annotations.push({
+      path: inputs.path,
+      start_line: inputs.start_line,
+      end_line: inputs.end_line,
+      annotation_level: 'failure',
+      title: 'Invalid Veracode Policy name',
+      message: 'Please check the policy name provided in the veracode.yml',
+    });
+
     const applicationResponse: VeracodeApplication.policyResultsData =
       await http.getResourceByAttribute<VeracodeApplication.policyResultsData>(inputs.vid, inputs.vkey, getPolicyResource);
 
     core.info(`API Response - ${applicationResponse}`);
     core.setOutput('total_elements', applicationResponse?.page?.total_elements);
+    if (applicationResponse?.page?.total_elements && applicationResponse?.page?.total_elements != 1) {
+      await updateChecks(
+        octokit,
+        checkStatic,
+        Checks.Conclusion.Failure,
+        annotations,
+        'Please review and ensure the accuracy of the Policy Name specified in your veracode.yml file.',
+      );
+      if (inputs.break_build_policy_findings == true) {
+        core.setFailed('Invalid Veracode Policy name.')
+      }
+    }
   } catch (error) {
     core.debug(`Error while validating invalid policy name: ${error}`);
+    await updateChecks(
+      octokit,
+      checkStatic,
+      Checks.Conclusion.Failure,
+      [],
+      'Error while validating policy name.',
+    );
     throw error;
   }
 }

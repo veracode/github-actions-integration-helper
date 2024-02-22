@@ -20,6 +20,10 @@ export type Inputs = {
     fail_checks_on_error: boolean;
     sandboxname: string;
     policyname: string;
+    path: string;
+    start_line: number;
+    end_line: number;
+    break_build_policy_findings: boolean;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;
