@@ -28,7 +28,7 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
       method: 'GET',
     }),
   };
-  const appUrl = `https://${appConfig.hostName.github}${resourceUri}${urlQueryParams}`;
+  const appUrl = `https://${appConfig.hostName.veracode}${resourceUri}${urlQueryParams}`;
   try {
     const response = await fetch(appUrl, { headers });
     const data = await response.json();
@@ -52,7 +52,7 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
       method: 'DELETE',
     }),
   };
-  const appUrl = `https://${appConfig.hostName.github}${resourceUri}/${resourceId}`;
+  const appUrl = `https://${appConfig.hostName.veracode}${resourceUri}/${resourceId}`;
   try {
     await fetch(appUrl, { method: 'DELETE', headers });
   } catch (error) {

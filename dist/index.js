@@ -28868,7 +28868,7 @@ async function getResourceByAttribute(vid, vkey, resource) {
             method: 'GET',
         }),
     };
-    const appUrl = `https://${app_config_1.default.hostName.github}${resourceUri}${urlQueryParams}`;
+    const appUrl = `https://${app_config_1.default.hostName.veracode}${resourceUri}${urlQueryParams}`;
     try {
         const response = await fetch(appUrl, { headers });
         const data = await response.json();
@@ -28892,7 +28892,7 @@ async function deleteResourceById(vid, vkey, resource) {
             method: 'DELETE',
         }),
     };
-    const appUrl = `https://${app_config_1.default.hostName.github}${resourceUri}/${resourceId}`;
+    const appUrl = `https://${app_config_1.default.hostName.veracode}${resourceUri}/${resourceId}`;
     try {
         await fetch(appUrl, { method: 'DELETE', headers });
     }
