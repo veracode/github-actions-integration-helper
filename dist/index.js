@@ -28875,7 +28875,7 @@ async function getResourceByAttribute(vid, vkey, resource) {
         return data;
     }
     catch (error) {
-        throw new Error('Failed to fetch resource.');
+        throw new Error(`Failed to fetch resource: ${error}`);
     }
 }
 exports.getResourceByAttribute = getResourceByAttribute;

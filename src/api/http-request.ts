@@ -34,7 +34,7 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
     const data = await response.json();
     return data as T;
   } catch (error) {
-    throw new Error('Failed to fetch resource.');
+    throw new Error(`Failed to fetch resource: ${error}`);
   }
 }
 
