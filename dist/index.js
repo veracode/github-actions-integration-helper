@@ -29330,9 +29330,9 @@ async function validateVeracodeApiCreds(inputs) {
         else {
             core.setFailed('Invalid/Expired Veracode API ID and API Key');
             annotations.push({
-                path: '',
-                start_line: null,
-                end_line: null,
+                path: '/',
+                start_line: 0,
+                end_line: 0,
                 annotation_level: 'failure',
                 title: 'Invalid/Expired Veracode API ID and API Key.',
                 message: 'Please check the VERACODE_API_ID and VERACODE_API_KEY configured under the secrets.',
