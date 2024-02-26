@@ -134,23 +134,23 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
       await http.getResourceByAttribute<VeracodeApplication.SelfUserResultsData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
 
     if (applicationResponse && applicationResponse?.api_credentials?.expiration_ts) {
-      core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
+      core.info(`VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
     } else {
-      core.setFailed('Invalid/Expired Veracode API ID and API Key');
+      core.setFailed('Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
       annotations.push({
         path: '/',
         start_line: 0,
         end_line: 0,
         annotation_level: 'failure',
-        title: 'Invalid/Expired Veracode API ID and API Key.',
+        title: 'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
         message: 'Please check the VERACODE_API_ID and VERACODE_API_KEY configured under the secrets.',
       });
       await updateChecks(
         octokit,
         checkStatic,
         Checks.Conclusion.Failure,
-        [],
-        'Invalid/Expired Veracode API ID and API Key.',
+        annotations,
+        'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
       );
     }
     return applicationResponse?.api_credentials?.expiration_ts;
