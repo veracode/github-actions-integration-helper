@@ -29328,6 +29328,7 @@ async function validateVeracodeApiCreds(inputs) {
                 title: 'Missing VERACODE_API_ID / VERACODE_API_KEY secret key.',
                 message: 'Please configure the VERACODE_API_ID and VERACODE_API_KEY under the organization secrets.',
             });
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Missing VERACODE_API_ID / VERACODE_API_KEY secret key.');
             return;
         }
         const getSelfUserDetailsResource = {
