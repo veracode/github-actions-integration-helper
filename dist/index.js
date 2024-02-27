@@ -29026,8 +29026,8 @@ const parseInputs = (getInput) => {
     if (!Object.values(Actions).includes(action)) {
         throw new Error(`Invalid action: ${action}. It must be one of '${Object.values(Actions).join('\' or \'')}'.`);
     }
-    const vid = getInput('vid', { required: true });
-    const vkey = getInput('vkey', { required: true });
+    const vid = getInput('vid');
+    const vkey = getInput('vkey');
     const appname = getInput('appname', { required: true });
     const token = getInput('token');
     const check_run_id = getInput('check_run_id');
@@ -29318,6 +29318,17 @@ async function validateVeracodeApiCreds(inputs) {
         status: Checks.Status.Completed,
     };
     try {
+        if (!inputs.vid || !inputs.vkey) {
+            core.setFailed('Missing VERACODE_API_ID and VERACODE_API_KEY keys.');
+            annotations.push({
+                path: '/',
+                start_line: 0,
+                end_line: 0,
+                annotation_level: 'failure',
+                title: 'Missing VERACODE_API_ID and VERACODE_API_KEY keys.',
+                message: 'Please configure the VERACODE_API_ID and VERACODE_API_KEY under the organization secrets.',
+            });
+        }
         const getSelfUserDetailsResource = {
             resourceUri: app_config_1.default.api.veracode.selfUserUri,
             queryAttribute: '',
@@ -29335,7 +29346,7 @@ async function validateVeracodeApiCreds(inputs) {
                 end_line: 0,
                 annotation_level: 'failure',
                 title: 'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
-                message: 'Please check the VERACODE_API_ID and VERACODE_API_KEY configured under the secrets.',
+                message: 'Please check the VERACODE_API_ID and VERACODE_API_KEY configured under the organization secrets.',
             });
             await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.');
         }

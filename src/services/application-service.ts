@@ -124,6 +124,17 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
     status: Checks.Status.Completed,
   };
   try {
+    if (!inputs.vid || !inputs.vkey) {
+      core.setFailed('Missing VERACODE_API_ID and VERACODE_API_KEY keys.');
+      annotations.push({
+        path: '/',
+        start_line: 0,
+        end_line: 0,
+        annotation_level: 'failure',
+        title: 'Missing VERACODE_API_ID and VERACODE_API_KEY keys.',
+        message: 'Please configure the VERACODE_API_ID and VERACODE_API_KEY under the organization secrets.',
+      });
+    }
     const getSelfUserDetailsResource = {
       resourceUri: appConfig.api.veracode.selfUserUri,
       queryAttribute: '',
@@ -143,7 +154,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
         end_line: 0,
         annotation_level: 'failure',
         title: 'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
-        message: 'Please check the VERACODE_API_ID and VERACODE_API_KEY configured under the secrets.',
+        message: 'Please check the VERACODE_API_ID and VERACODE_API_KEY configured under the organization secrets.',
       });
       await updateChecks(
         octokit,

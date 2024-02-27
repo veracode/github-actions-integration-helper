@@ -37,8 +37,8 @@ export const parseInputs = (getInput: GetInput): Inputs => {
     throw new Error(`Invalid action: ${action}. It must be one of '${Object.values(Actions).join('\' or \'')}'.`);
   }
 
-  const vid = getInput('vid', { required: true });
-  const vkey = getInput('vkey', { required: true });
+  const vid = getInput('vid');
+  const vkey = getInput('vkey');
   const appname = getInput('appname', { required: true });
 
   const token = getInput('token');
