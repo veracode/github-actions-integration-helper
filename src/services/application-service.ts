@@ -105,7 +105,7 @@ async function getSandboxesByApplicationGuid(
   }
 }
 
-export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> {
+export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string | void> {
   const annotations: Checks.Annotation[] = [];
   const repo = inputs.source_repository.split('/');
   const ownership = {
@@ -125,15 +125,16 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
   };
   try {
     if (!inputs.vid || !inputs.vkey) {
-      core.setFailed('Missing VERACODE_API_ID and VERACODE_API_KEY keys.');
+      core.setFailed('Missing VERACODE_API_ID / VERACODE_API_KEY secret key.');
       annotations.push({
         path: '/',
         start_line: 0,
         end_line: 0,
         annotation_level: 'failure',
-        title: 'Missing VERACODE_API_ID and VERACODE_API_KEY keys.',
+        title: 'Missing VERACODE_API_ID / VERACODE_API_KEY secret key.',
         message: 'Please configure the VERACODE_API_ID and VERACODE_API_KEY under the organization secrets.',
       });
+      return;
     }
     const getSelfUserDetailsResource = {
       resourceUri: appConfig.api.veracode.selfUserUri,
@@ -163,6 +164,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string> 
         annotations,
         'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
       );
+      return;
     }
     return applicationResponse?.api_credentials?.expiration_ts;
   } catch (error) {

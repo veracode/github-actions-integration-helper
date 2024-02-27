@@ -29319,15 +29319,16 @@ async function validateVeracodeApiCreds(inputs) {
     };
     try {
         if (!inputs.vid || !inputs.vkey) {
-            core.setFailed('Missing VERACODE_API_ID and VERACODE_API_KEY keys.');
+            core.setFailed('Missing VERACODE_API_ID / VERACODE_API_KEY secret key.');
             annotations.push({
                 path: '/',
                 start_line: 0,
                 end_line: 0,
                 annotation_level: 'failure',
-                title: 'Missing VERACODE_API_ID and VERACODE_API_KEY keys.',
+                title: 'Missing VERACODE_API_ID / VERACODE_API_KEY secret key.',
                 message: 'Please configure the VERACODE_API_ID and VERACODE_API_KEY under the organization secrets.',
             });
+            return;
         }
         const getSelfUserDetailsResource = {
             resourceUri: app_config_1.default.api.veracode.selfUserUri,
@@ -29349,6 +29350,7 @@ async function validateVeracodeApiCreds(inputs) {
                 message: 'Please check the VERACODE_API_ID and VERACODE_API_KEY configured under the organization secrets.',
             });
             await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.');
+            return;
         }
         return (_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.api_credentials) === null || _b === void 0 ? void 0 : _b.expiration_ts;
     }
