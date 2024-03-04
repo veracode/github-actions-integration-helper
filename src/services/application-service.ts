@@ -206,6 +206,29 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
     status: Checks.Status.Completed,
   };
   try {
+    if (!inputs.policyname) {
+      if (inputs.break_build_policy_findings == true) {
+        core.setFailed('Missing Veracode Policy name in the config.')
+      } else {
+        core.error('Missing Veracode Policy name in the config.')
+      }
+      annotations.push({
+        path: '/',
+        start_line: 0,
+        end_line: 0,
+        annotation_level: 'failure',
+        title: 'Missing Veracode Policy name in the config.',
+        message: 'Please configure the Veracode policy name under the config file.',
+      });
+      await updateChecks(
+        octokit,
+        checkStatic,
+        Checks.Conclusion.Failure,
+        annotations,
+        'Missing Veracode Policy name in the config.',
+      );
+      return;
+    }
     const getPolicyResource = {
       resourceUri: appConfig.api.veracode.policyUri,
       queryAttribute: 'name',

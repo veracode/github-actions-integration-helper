@@ -29067,7 +29067,7 @@ const vaildateRemoveSandboxInput = (inputs) => {
 exports.vaildateRemoveSandboxInput = vaildateRemoveSandboxInput;
 const ValidatePolicyName = (inputs) => {
     console.log(inputs);
-    if (!inputs.policyname || inputs.path || inputs.start_line || inputs.end_line || inputs.break_build_policy_findings) {
+    if (!inputs.path || !inputs.start_line || !inputs.end_line || !inputs.break_build_policy_findings) {
         return false;
     }
     return true;
@@ -29380,6 +29380,24 @@ async function validatePolicyName(inputs) {
         status: Checks.Status.Completed,
     };
     try {
+        if (!inputs.policyname) {
+            if (inputs.break_build_policy_findings == true) {
+                core.setFailed('Missing Veracode Policy name in the config.');
+            }
+            else {
+                core.error('Missing Veracode Policy name in the config.');
+            }
+            annotations.push({
+                path: '/',
+                start_line: 0,
+                end_line: 0,
+                annotation_level: 'failure',
+                title: 'Missing Veracode Policy name in the config.',
+                message: 'Please configure the Veracode policy name under the config file.',
+            });
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Missing Veracode Policy name in the config.');
+            return;
+        }
         const getPolicyResource = {
             resourceUri: app_config_1.default.api.veracode.policyUri,
             queryAttribute: 'name',

@@ -86,7 +86,7 @@ export const vaildateRemoveSandboxInput = (inputs: Inputs): boolean => {
 
 export const ValidatePolicyName = (inputs: Inputs): boolean => {
   console.log(inputs);
-  if (!inputs.policyname || inputs.path || inputs.start_line || inputs.end_line || inputs.break_build_policy_findings) {
+  if (!inputs.path || !inputs.start_line || !inputs.end_line || !inputs.break_build_policy_findings) {
     return false;
   }
   return true;
