@@ -213,9 +213,9 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
         core.error('Missing Veracode Policy name in the config.')
       }
       annotations.push({
-        path: inputs.path,
-        start_line: inputs.start_line,
-        end_line: inputs.end_line,
+        path: '/',
+        start_line: 0,
+        end_line: 0,
         annotation_level: 'failure',
         title: 'Missing Veracode Policy name in the config.',
         message: 'Please configure the Veracode policy name under the config file.',
