@@ -207,7 +207,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
   };
   try {
     if (!inputs.policyname) {
-      if (inputs.break_build_policy_findings == true) {
+      if (inputs.break_build_invalid_policy == true) {
         core.setFailed('Missing Veracode Policy name in the config.')
       } else {
         core.error('Missing Veracode Policy name in the config.')
@@ -256,7 +256,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
         annotations,
         'Please check the policy name provided in the config file.',
       );
-      if (inputs.break_build_policy_findings == true) {
+      if (inputs.break_build_invalid_policy == true) {
         core.setFailed('Invalid Veracode Policy name.')
       } else {
         core.error('Invalid Veracode Policy name.')

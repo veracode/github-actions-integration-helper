@@ -23,7 +23,7 @@ export type Inputs = {
     path: string;
     start_line: number;
     end_line: number;
-    break_build_policy_findings: boolean;
+    break_build_invalid_policy: boolean;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;

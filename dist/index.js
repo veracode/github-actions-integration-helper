@@ -29039,13 +29039,13 @@ const parseInputs = (getInput) => {
     const path = getInput('path');
     const start_line = getInput('start_line');
     const end_line = getInput('end_line');
-    const break_build_policy_findings = getInput('break_build_policy_findings') === 'true';
+    const break_build_invalid_policy = getInput('break_build_invalid_policy') === 'true';
     if (source_repository && source_repository.split('/').length !== 2) {
         throw new Error('source_repository needs to be in the {owner}/{repo} format');
     }
     return { action, token, check_run_id: +check_run_id, vid, vkey, appname,
         source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname,
-        policyname, path, start_line: +start_line, end_line: +end_line, break_build_policy_findings
+        policyname, path, start_line: +start_line, end_line: +end_line, break_build_invalid_policy
     };
 };
 exports.parseInputs = parseInputs;
@@ -29067,7 +29067,7 @@ const vaildateRemoveSandboxInput = (inputs) => {
 exports.vaildateRemoveSandboxInput = vaildateRemoveSandboxInput;
 const ValidatePolicyName = (inputs) => {
     console.log(inputs);
-    if (!inputs.path || !inputs.start_line || !inputs.end_line || !inputs.break_build_policy_findings) {
+    if (!inputs.path || !inputs.start_line || !inputs.end_line || !inputs.break_build_invalid_policy) {
         return false;
     }
     return true;
@@ -29381,7 +29381,7 @@ async function validatePolicyName(inputs) {
     };
     try {
         if (!inputs.policyname) {
-            if (inputs.break_build_policy_findings == true) {
+            if (inputs.break_build_invalid_policy == true) {
                 core.setFailed('Missing Veracode Policy name in the config.');
             }
             else {
@@ -29415,7 +29415,7 @@ async function validatePolicyName(inputs) {
         core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
         if (applicationResponse && ((_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements) != 1) {
             await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Please check the policy name provided in the config file.');
-            if (inputs.break_build_policy_findings == true) {
+            if (inputs.break_build_invalid_policy == true) {
                 core.setFailed('Invalid Veracode Policy name.');
             }
             else {
