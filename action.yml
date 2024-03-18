@@ -44,8 +44,8 @@ inputs:
   end_line:
     description: 'End line'
     required: false
-  break_build_policy_findings:
-    description: 'Break build on policy findings'
+  break_build_invalid_policy:
+    description: 'Break build on invalid policy name'
     required: false
 runs:
   using: 'node20'
