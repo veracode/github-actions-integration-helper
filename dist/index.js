@@ -29091,6 +29091,7 @@ const parseInputs = (getInput) => {
     const source_repository = getInput('source_repository');
     const fail_checks_on_policy = getInput('fail_checks_on_policy') === 'true';
     const fail_checks_on_error = getInput('fail_checks_on_error') === 'true';
+    const filter_mitigated_flaws = getInput('filter_mitigated_flaws') === 'true';
     const sandboxname = getInput('sandboxname');
     const policyname = getInput('policyname');
     const path = getInput('path');
@@ -29101,7 +29102,7 @@ const parseInputs = (getInput) => {
         throw new Error('source_repository needs to be in the {owner}/{repo} format');
     }
     return { action, token, check_run_id: +check_run_id, vid, vkey, appname,
-        source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname,
+        source_repository, fail_checks_on_policy, fail_checks_on_error, filter_mitigated_flaws, sandboxname,
         policyname, path, start_line: +start_line, end_line: +end_line, break_build_invalid_policy
     };
 };
@@ -29655,16 +29656,27 @@ async function preparePipelineResults(inputs) {
         policyFindings = [];
     }
     core.info(`Policy findings: ${policyFindings.length}`);
-    const mitigatedPolicyFindings = policyFindings.filter((finding) => {
-        return (finding.violates_policy === true &&
-            finding.finding_status.status === 'CLOSED' &&
-            (finding.finding_status.resolution === 'POTENTIAL_FALSE_POSITIVE' ||
-                finding.finding_status.resolution === 'MITIGATED') &&
-            finding.finding_status.resolution_status === 'APPROVED');
-    });
-    core.info(`Mitigated policy findings: ${mitigatedPolicyFindings.length}`);
+    const filter_mitigated_flaws = inputs.filter_mitigated_flaws;
+    let policyFindingsToExlcude = [];
+    if (filter_mitigated_flaws) {
+        policyFindingsToExlcude = policyFindings.filter((finding) => {
+            return (finding.violates_policy === true &&
+                finding.finding_status.status === 'CLOSED' &&
+                (finding.finding_status.resolution === 'POTENTIAL_FALSE_POSITIVE' ||
+                    finding.finding_status.resolution === 'MITIGATED') &&
+                finding.finding_status.resolution_status === 'APPROVED');
+        });
+    }
+    else
+        policyFindingsToExlcude = policyFindings.filter((finding) => {
+            return finding.violates_policy === true;
+        });
+    core.info(`Mitigated policy findings: ${policyFindingsToExlcude.length}`);
     const filteredFindingsArray = findingsArray.filter((finding) => {
-        return !mitigatedPolicyFindings.some((mitigatedFinding) => {
+        return !policyFindingsToExlcude.some((mitigatedFinding) => {
+            if (mitigatedFinding.finding_details.file_path.charAt(0) === '/') {
+                mitigatedFinding.finding_details.file_path = mitigatedFinding.finding_details.file_path.substring(1);
+            }
             return (finding.files.source_file.file === mitigatedFinding.finding_details.file_path &&
                 +finding.cwe_id === mitigatedFinding.finding_details.cwe.id &&
                 Math.abs(finding.files.source_file.line - mitigatedFinding.finding_details.file_line_number) <= LINE_NUMBER_SLOP);

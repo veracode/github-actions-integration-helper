@@ -27,6 +27,7 @@ export type Inputs = {
   start_line: number;
   end_line: number;
   break_build_invalid_policy: boolean;
+  filter_mitigated_flaws: boolean;
 };
 
 export const parseInputs = (getInput: GetInput): Inputs => {
@@ -47,6 +48,7 @@ export const parseInputs = (getInput: GetInput): Inputs => {
 
   const fail_checks_on_policy = getInput('fail_checks_on_policy') === 'true';
   const fail_checks_on_error = getInput('fail_checks_on_error') === 'true';
+  const filter_mitigated_flaws = getInput('filter_mitigated_flaws') === 'true';
 
   const sandboxname = getInput('sandboxname');
 
@@ -63,7 +65,7 @@ export const parseInputs = (getInput: GetInput): Inputs => {
   }
 
   return { action, token, check_run_id: +check_run_id, vid, vkey, appname, 
-    source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname,
+    source_repository, fail_checks_on_policy, fail_checks_on_error, filter_mitigated_flaws, sandboxname,
     policyname, path, start_line: +start_line, end_line: +end_line, break_build_invalid_policy
    };
 };
