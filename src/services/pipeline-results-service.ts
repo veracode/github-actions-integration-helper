@@ -86,24 +86,35 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   // What if no policy scan?
   core.info(`Policy findings: ${policyFindings.length}`);
 
-  // filter out policy findings based on violates_policy = true and finding_status.status = "CLOSED" and
-  // resolution = "POTENTIAL_FALSE_POSITIVE" or "MITIGATED" and resolution_status = "APPROVED"
-  const mitigatedPolicyFindings = policyFindings.filter((finding) => {
-    return (
-      finding.violates_policy === true &&
-      finding.finding_status.status === 'CLOSED' &&
-      (finding.finding_status.resolution === 'POTENTIAL_FALSE_POSITIVE' ||
-        finding.finding_status.resolution === 'MITIGATED') &&
-      finding.finding_status.resolution_status === 'APPROVED'
-    );
-  });
+  const filter_mitigated_flaws = inputs.filter_mitigated_flaws;
+  let policyFindingsToExlcude: VeracodePolicyResult.Finding[] = [];
 
-  core.info(`Mitigated policy findings: ${mitigatedPolicyFindings.length}`);
+  if (filter_mitigated_flaws) {
+    // filter out policy findings based on violates_policy = true and finding_status.status = "CLOSED" and
+    // resolution = "POTENTIAL_FALSE_POSITIVE" or "MITIGATED" and resolution_status = "APPROVED"
+    policyFindingsToExlcude = policyFindings.filter((finding) => {
+      return (
+        finding.violates_policy === true &&
+        finding.finding_status.status === 'CLOSED' &&
+        (finding.finding_status.resolution === 'POTENTIAL_FALSE_POSITIVE' ||
+          finding.finding_status.resolution === 'MITIGATED') &&
+        finding.finding_status.resolution_status === 'APPROVED'
+      );
+    });
+  } else
+    policyFindingsToExlcude = policyFindings.filter((finding) => {
+      return finding.violates_policy === true;
+    });
 
-  // Remove item in findingsArray if there are item in mitigatedPolicyFindings if the file_path and
+  core.info(`Mitigated policy findings: ${policyFindingsToExlcude.length}`);
+
+  // Remove item in findingsArray if there are item in policyFindingsToExlcude if the file_path and
   // cwe_id and line_number are the same
   const filteredFindingsArray = findingsArray.filter((finding) => {
-    return !mitigatedPolicyFindings.some((mitigatedFinding) => {
+    return !policyFindingsToExlcude.some((mitigatedFinding) => {
+      if (mitigatedFinding.finding_details.file_path.charAt(0) === '/') {
+        mitigatedFinding.finding_details.file_path = mitigatedFinding.finding_details.file_path.substring(1);
+      }
       return (
         finding.files.source_file.file === mitigatedFinding.finding_details.file_path &&
         +finding.cwe_id === mitigatedFinding.finding_details.cwe.id &&

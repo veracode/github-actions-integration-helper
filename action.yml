@@ -47,6 +47,10 @@ inputs:
   break_build_invalid_policy:
     description: 'Break build on invalid policy name'
     required: false
+  filter_mitigated_flaws:
+    description: 'Filter pipeline scan results based on mitigated flaws (true) or all policy flaws (false)'
+    required: false
+    default: false
 runs:
   using: 'node20'
   main: 'dist/index.js'
