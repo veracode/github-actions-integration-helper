@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import { Octokit } from '@octokit/rest';
+import { DefaultArtifactClient } from '@actions/artifact';
 import * as fs from 'fs/promises';
 import * as Checks from '../namespaces/Checks';
 import * as VeracodePipelineResult from '../namespaces/VeracodePipelineResult';
@@ -44,11 +45,12 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   }
 
   let findingsArray: VeracodePipelineResult.Finding[] = [];
-
+  let veracodePipelineResult;
   try {
     const data = await fs.readFile('filtered_results.json', 'utf-8');
     const parsedData: VeracodePipelineResult.ResultsData = JSON.parse(data);
     findingsArray = parsedData.findings;
+    veracodePipelineResult = JSON.parse(data);
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
@@ -101,10 +103,11 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
         finding.finding_status.resolution_status === 'APPROVED'
       );
     });
-  } else
+  } else {
     policyFindingsToExlcude = policyFindings.filter((finding) => {
       return finding.violates_policy === true;
     });
+  }
 
   core.info(`Mitigated policy findings: ${policyFindingsToExlcude.length}`);
 
@@ -123,6 +126,20 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     });
   });
 
+  const filePath = "filtered_results.json";
+  const artifactName = 'Veracode Pipeline-Scan Mitigated Filtered Results';
+  const artifactClient = new DefaultArtifactClient();
+
+  try {
+    veracodePipelineResult.findings = filteredFindingsArray;
+    const rootDirectory = process.cwd();
+    await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
+    await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
+    core.info(`${artifactName} directory uploaded successfully under the artifact.`);
+  } catch (error) {
+    core.info(`Error while updating the ${artifactName} artifact ${error}`);
+  }
+  
   core.info(`Filtered pipeline findings: ${filteredFindingsArray.length}`);
 
   if (filteredFindingsArray.length === 0) {
