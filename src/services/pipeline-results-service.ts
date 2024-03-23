@@ -131,7 +131,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const artifactClient = new DefaultArtifactClient();
 
   try {
-    veracodePipelineResult.findings = JSON.stringify(filteredFindingsArray);
+    veracodePipelineResult.findings = JSON.stringify(filteredFindingsArray, null, 2);
     const rootDirectory = process.cwd();
     await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
     await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
