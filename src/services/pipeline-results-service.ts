@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import { Octokit } from '@octokit/rest';
+import { DefaultArtifactClient } from '@actions/artifact';
 import * as fs from 'fs/promises';
 import * as Checks from '../namespaces/Checks';
 import * as VeracodePipelineResult from '../namespaces/VeracodePipelineResult';
@@ -101,10 +102,28 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
         finding.finding_status.resolution_status === 'APPROVED'
       );
     });
-  } else
+  } else {
     policyFindingsToExlcude = policyFindings.filter((finding) => {
       return finding.violates_policy === true;
     });
+  }
+
+  try {
+    const rootDirectory = process.cwd();
+    const filePath = "results_v2.json";
+    await fs.writeFile(filePath, JSON.stringify(policyFindingsToExlcude, null, 2));
+    const artifactClient = new DefaultArtifactClient();
+    const artifactName = 'Veracode Pipeline-Scan Results V2';
+    const files = [
+      'results_v2.json',
+      'filtered_results_v2.json'
+    ]
+    const uploadResult = await artifactClient.uploadArtifact(artifactName, files, rootDirectory);
+    core.info(`Mitigated policy findings uploadResult : ${uploadResult}`);
+  } catch (error) {
+    core.info(`Error while updating the artifact ${error}`);
+  }
+  
 
   core.info(`Mitigated policy findings: ${policyFindingsToExlcude.length}`);
 
