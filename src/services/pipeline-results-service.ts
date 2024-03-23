@@ -45,11 +45,12 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   }
 
   let findingsArray: VeracodePipelineResult.Finding[] = [];
-
+  let veracodePipelineResult;
   try {
     const data = await fs.readFile('filtered_results.json', 'utf-8');
     const parsedData: VeracodePipelineResult.ResultsData = JSON.parse(data);
     findingsArray = parsedData.findings;
+    veracodePipelineResult = JSON.parse(data);
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
@@ -130,8 +131,9 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const artifactClient = new DefaultArtifactClient();
 
   try {
+    veracodePipelineResult.finding = JSON.stringify(filteredFindingsArray);
     const rootDirectory = process.cwd();
-    await fs.writeFile(filePath, JSON.stringify(filteredFindingsArray, null, 2));
+    await fs.writeFile(filePath, veracodePipelineResult);
     await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
     core.info(`${artifactName} directory uploaded successfully under the artifact.`);
   } catch (error) {
