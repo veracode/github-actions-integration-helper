@@ -23,18 +23,18 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
     Authorization: calculateAuthorizationHeader({
       id: vid,
       key: vkey,
-      host: appConfig.hostName,
+      host: appConfig.hostName.veracode,
       url: queryUrl,
       method: 'GET',
     }),
   };
-  const appUrl = `https://${appConfig.hostName}${resourceUri}${urlQueryParams}`;
+  const appUrl = `https://${appConfig.hostName.veracode}${resourceUri}${urlQueryParams}`;
   try {
     const response = await fetch(appUrl, { headers });
     const data = await response.json();
     return data as T;
   } catch (error) {
-    throw new Error('Failed to fetch resource.');
+    throw new Error(`Failed to fetch resource: ${error}`);
   }
 }
 
@@ -47,16 +47,16 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
     Authorization: calculateAuthorizationHeader({
       id: vid,
       key: vkey,
-      host: appConfig.hostName,
+      host: appConfig.hostName.veracode,
       url: queryUrl,
       method: 'DELETE',
     }),
   };
-  const appUrl = `https://${appConfig.hostName}${resourceUri}/${resourceId}`;
+  const appUrl = `https://${appConfig.hostName.veracode}${resourceUri}/${resourceId}`;
   try {
     await fetch(appUrl, { method: 'DELETE', headers });
   } catch (error) {
     console.log(error);
-    throw new Error('Failed to delete resource.');
+    throw new Error(`Failed to delete resource: ${error}`);
   }
 }

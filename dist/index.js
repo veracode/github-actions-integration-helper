@@ -28863,19 +28863,19 @@ async function getResourceByAttribute(vid, vkey, resource) {
         Authorization: (0, veracode_hmac_1.calculateAuthorizationHeader)({
             id: vid,
             key: vkey,
-            host: app_config_1.default.hostName,
+            host: app_config_1.default.hostName.veracode,
             url: queryUrl,
             method: 'GET',
         }),
     };
-    const appUrl = `https://${app_config_1.default.hostName}${resourceUri}${urlQueryParams}`;
+    const appUrl = `https://${app_config_1.default.hostName.veracode}${resourceUri}${urlQueryParams}`;
     try {
         const response = await fetch(appUrl, { headers });
         const data = await response.json();
         return data;
     }
     catch (error) {
-        throw new Error('Failed to fetch resource.');
+        throw new Error(`Failed to fetch resource: ${error}`);
     }
 }
 exports.getResourceByAttribute = getResourceByAttribute;
@@ -28887,18 +28887,18 @@ async function deleteResourceById(vid, vkey, resource) {
         Authorization: (0, veracode_hmac_1.calculateAuthorizationHeader)({
             id: vid,
             key: vkey,
-            host: app_config_1.default.hostName,
+            host: app_config_1.default.hostName.veracode,
             url: queryUrl,
             method: 'DELETE',
         }),
     };
-    const appUrl = `https://${app_config_1.default.hostName}${resourceUri}/${resourceId}`;
+    const appUrl = `https://${app_config_1.default.hostName.veracode}${resourceUri}/${resourceId}`;
     try {
         await fetch(appUrl, { method: 'DELETE', headers });
     }
     catch (error) {
         console.log(error);
-        throw new Error('Failed to delete resource.');
+        throw new Error(`Failed to delete resource: ${error}`);
     }
 }
 exports.deleteResourceById = deleteResourceById;
@@ -28985,11 +28985,20 @@ exports.calculateAuthorizationHeader = calculateAuthorizationHeader;
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const appConfig = {
-    hostName: 'api.veracode.com',
-    applicationUri: '/appsec/v1/applications',
-    findingsUri: '/appsec/v2/applications',
-    sandboxUri: '/appsec/v1/applications/${appGuid}/sandboxes',
-    selfUserUri: '/api/authn/v2/users/self'
+    hostName: {
+        veracode: 'api.veracode.com',
+        github: 'api.github.com'
+    },
+    api: {
+        veracode: {
+            applicationUri: '/appsec/v1/applications',
+            findingsUri: '/appsec/v2/applications',
+            sandboxUri: '/appsec/v1/applications/${appGuid}/sandboxes',
+            selfUserUri: '/api/authn/v2/users/self',
+            policyUri: '/appsec/v1/policies'
+        },
+        github: ''
+    }
 };
 exports["default"] = appConfig;
 
@@ -29002,7 +29011,7 @@ exports["default"] = appConfig;
 "use strict";
 
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.vaildateRemoveSandboxInput = exports.vaildateScanResultsActionInput = exports.parseInputs = exports.Actions = void 0;
+exports.ValidateVeracodeApiCreds = exports.ValidatePolicyName = exports.vaildateRemoveSandboxInput = exports.vaildateScanResultsActionInput = exports.parseInputs = exports.Actions = void 0;
 var Actions;
 (function (Actions) {
     Actions["GetPolicyNameByProfileName"] = "getPolicyNameByProfileName";
@@ -29010,14 +29019,15 @@ var Actions;
     Actions["PreparePolicyResults"] = "preparePolicyResults";
     Actions["RemoveSandbox"] = "removeSandbox";
     Actions["ValidateVeracodeApiCreds"] = "validateVeracodeApiCreds";
+    Actions["ValidatePolicyName"] = "validatePolicyName";
 })(Actions || (exports.Actions = Actions = {}));
 const parseInputs = (getInput) => {
     const action = getInput('action', { required: true });
     if (!Object.values(Actions).includes(action)) {
         throw new Error(`Invalid action: ${action}. It must be one of '${Object.values(Actions).join('\' or \'')}'.`);
     }
-    const vid = getInput('vid', { required: true });
-    const vkey = getInput('vkey', { required: true });
+    const vid = getInput('vid');
+    const vkey = getInput('vkey');
     const appname = getInput('appname', { required: true });
     const token = getInput('token');
     const check_run_id = getInput('check_run_id');
@@ -29025,11 +29035,18 @@ const parseInputs = (getInput) => {
     const fail_checks_on_policy = getInput('fail_checks_on_policy') === 'true';
     const fail_checks_on_error = getInput('fail_checks_on_error') === 'true';
     const sandboxname = getInput('sandboxname');
+    const policyname = getInput('policyname');
+    const path = getInput('path');
+    const start_line = getInput('start_line');
+    const end_line = getInput('end_line');
+    const break_build_invalid_policy = getInput('break_build_invalid_policy') === 'true';
     if (source_repository && source_repository.split('/').length !== 2) {
         throw new Error('source_repository needs to be in the {owner}/{repo} format');
     }
     return { action, token, check_run_id: +check_run_id, vid, vkey, appname,
-        source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname };
+        source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname,
+        policyname, path, start_line: +start_line, end_line: +end_line, break_build_invalid_policy
+    };
 };
 exports.parseInputs = parseInputs;
 const vaildateScanResultsActionInput = (inputs) => {
@@ -29048,6 +29065,22 @@ const vaildateRemoveSandboxInput = (inputs) => {
     return true;
 };
 exports.vaildateRemoveSandboxInput = vaildateRemoveSandboxInput;
+const ValidatePolicyName = (inputs) => {
+    console.log(inputs);
+    if (!inputs.path || !inputs.start_line || !inputs.end_line || !inputs.break_build_invalid_policy) {
+        return false;
+    }
+    return true;
+};
+exports.ValidatePolicyName = ValidatePolicyName;
+const ValidateVeracodeApiCreds = (inputs) => {
+    console.log(inputs);
+    if (!inputs.token || !inputs.check_run_id || !inputs.source_repository) {
+        return false;
+    }
+    return true;
+};
+exports.ValidateVeracodeApiCreds = ValidateVeracodeApiCreds;
 
 
 /***/ }),
@@ -29106,8 +29139,11 @@ async function run() {
         case 'validateVeracodeApiCreds':
             await applicationService.validateVeracodeApiCreds(inputs);
             break;
+        case 'validatePolicyName':
+            await applicationService.validatePolicyName(inputs);
+            break;
         default:
-            core.setFailed(`Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds.`);
+            core.setFailed(`Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds, validatePolicyName.`);
     }
 }
 exports.run = run;
@@ -29174,16 +29210,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
-exports.validateVeracodeApiCreds = exports.removeSandbox = exports.getApplicationByName = void 0;
+exports.validatePolicyName = exports.validateVeracodeApiCreds = exports.removeSandbox = exports.getApplicationByName = void 0;
 const core = __importStar(__nccwpck_require__(2619));
 const app_config_1 = __importDefault(__nccwpck_require__(5409));
+const rest_1 = __nccwpck_require__(8229);
+const Checks = __importStar(__nccwpck_require__(5523));
+const check_service_1 = __nccwpck_require__(6616);
 const http = __importStar(__nccwpck_require__(963));
 const inputs_1 = __nccwpck_require__(6325);
 async function getApplicationByName(appname, vid, vkey) {
     var _a;
     try {
         const getApplicationByNameResource = {
-            resourceUri: app_config_1.default.applicationUri,
+            resourceUri: app_config_1.default.api.veracode.applicationUri,
             queryAttribute: 'name',
             queryValue: encodeURIComponent(appname),
         };
@@ -29234,7 +29273,7 @@ async function removeSandbox(inputs) {
     }
     try {
         const removeSandboxResource = {
-            resourceUri: app_config_1.default.sandboxUri.replace('${appGuid}', appGuid),
+            resourceUri: app_config_1.default.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
             resourceId: sandbox.guid,
         };
         await http.deleteResourceById(vid, vkey, removeSandboxResource);
@@ -29249,7 +29288,7 @@ async function getSandboxesByApplicationGuid(appGuid, vid, vkey) {
     var _a;
     try {
         const getSandboxesByApplicationGuidResource = {
-            resourceUri: app_config_1.default.sandboxUri.replace('${appGuid}', appGuid),
+            resourceUri: app_config_1.default.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
             queryAttribute: '',
             queryValue: '',
         };
@@ -29263,28 +29302,134 @@ async function getSandboxesByApplicationGuid(appGuid, vid, vkey) {
 }
 async function validateVeracodeApiCreds(inputs) {
     var _a, _b;
+    const annotations = [];
+    const repo = inputs.source_repository.split('/');
+    const ownership = {
+        owner: repo[0],
+        repo: repo[1],
+    };
+    const octokit = new rest_1.Octokit({
+        auth: inputs.token,
+    });
+    const checkStatic = {
+        owner: ownership.owner,
+        repo: ownership.repo,
+        check_run_id: inputs.check_run_id,
+        status: Checks.Status.Completed,
+    };
     try {
+        if (!inputs.vid || !inputs.vkey) {
+            core.setFailed('Missing VERACODE_API_ID / VERACODE_API_KEY secret key.');
+            annotations.push({
+                path: '/',
+                start_line: 0,
+                end_line: 0,
+                annotation_level: 'failure',
+                title: 'Missing VERACODE_API_ID / VERACODE_API_KEY secret key.',
+                message: 'Please configure the VERACODE_API_ID and VERACODE_API_KEY under the organization secrets.',
+            });
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Missing VERACODE_API_ID / VERACODE_API_KEY secret key.');
+            return;
+        }
         const getSelfUserDetailsResource = {
-            resourceUri: app_config_1.default.selfUserUri,
+            resourceUri: app_config_1.default.api.veracode.selfUserUri,
             queryAttribute: '',
             queryValue: '',
         };
         const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
-        core.info(`API Response - ${applicationResponse}`);
         if (applicationResponse && ((_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.api_credentials) === null || _a === void 0 ? void 0 : _a.expiration_ts)) {
-            core.info(`Veracode API ID and API key is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
+            core.info(`VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
         }
         else {
-            core.setFailed('Invalid/Expired Veracode API ID and API Key');
+            core.setFailed('Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
+            annotations.push({
+                path: '/',
+                start_line: 0,
+                end_line: 0,
+                annotation_level: 'failure',
+                title: 'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
+                message: 'Please check the VERACODE_API_ID and VERACODE_API_KEY configured under the organization secrets.',
+            });
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.');
+            return;
         }
         return (_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.api_credentials) === null || _b === void 0 ? void 0 : _b.expiration_ts;
     }
     catch (error) {
-        console.error(error);
+        core.debug(`Error while validating Veracode API credentials: ${error}`);
+        await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], 'Error while validating Veracode API credentials.');
         throw error;
     }
 }
 exports.validateVeracodeApiCreds = validateVeracodeApiCreds;
+async function validatePolicyName(inputs) {
+    var _a, _b;
+    const annotations = [];
+    const repo = inputs.source_repository.split('/');
+    const ownership = {
+        owner: repo[0],
+        repo: repo[1],
+    };
+    const octokit = new rest_1.Octokit({
+        auth: inputs.token,
+    });
+    const checkStatic = {
+        owner: ownership.owner,
+        repo: ownership.repo,
+        check_run_id: inputs.check_run_id,
+        status: Checks.Status.Completed,
+    };
+    try {
+        if (!inputs.policyname) {
+            if (inputs.break_build_invalid_policy == true) {
+                core.setFailed('Missing Veracode Policy name in the config.');
+            }
+            else {
+                core.error('Missing Veracode Policy name in the config.');
+            }
+            annotations.push({
+                path: '/',
+                start_line: 0,
+                end_line: 0,
+                annotation_level: 'failure',
+                title: 'Missing Veracode Policy name in the config.',
+                message: 'Please configure the Veracode policy name under the config file.',
+            });
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Missing Veracode Policy name in the config.');
+            return;
+        }
+        const getPolicyResource = {
+            resourceUri: app_config_1.default.api.veracode.policyUri,
+            queryAttribute: 'name',
+            queryValue: encodeURIComponent(inputs.policyname),
+        };
+        annotations.push({
+            path: inputs.path,
+            start_line: inputs.start_line,
+            end_line: inputs.end_line,
+            annotation_level: 'failure',
+            title: 'Invalid Veracode Policy name',
+            message: 'Please check the policy name provided in the config file.',
+        });
+        const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
+        core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
+        if (applicationResponse && ((_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements) != 1) {
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Please check the policy name provided in the config file.');
+            if (inputs.break_build_invalid_policy == true) {
+                core.setFailed('Invalid Veracode Policy name.');
+            }
+            else {
+                core.error('Invalid Veracode Policy name.');
+            }
+        }
+    }
+    catch (error) {
+        core.debug(`Error while validating invalid policy name: ${error}`);
+        await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], 'Error while validating policy name.');
+        throw error;
+    }
+}
+exports.validatePolicyName = validatePolicyName;
 
 
 /***/ }),
@@ -29353,7 +29498,7 @@ const app_config_1 = __importDefault(__nccwpck_require__(5409));
 const http = __importStar(__nccwpck_require__(963));
 async function getApplicationFindings(appGuid, vid, vkey) {
     const getPolicyFindingsByApplicationResource = {
-        resourceUri: `${app_config_1.default.findingsUri}/${appGuid}/findings`,
+        resourceUri: `${app_config_1.default.api.veracode.findingsUri}/${appGuid}/findings`,
         queryAttribute: 'size',
         queryValue: '1000',
     };

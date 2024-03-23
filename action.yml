@@ -1,5 +1,5 @@
-name: 'Veracode Pipeline Scan Resutls'
-description: 'Process Veracode Pipeline Scan Results and close a check run on GitHub'
+name: 'Veracode GitHub Workflow Tool Helper functions'
+description: 'Helper functions for GitHub Workflow Tool - Currently supports validations and process scan results.'
 author: 'Vincent Deng'
 inputs:
   action:
@@ -31,6 +31,21 @@ inputs:
     required: false
   sandboxname:
     description: 'Sandbox Name'
+    required: false
+  policyname:
+    description: 'Policy Name'
+    required: false
+  path:
+    description: 'Path'
+    required: false
+  start_line:
+    description: 'Start line'
+    required: false
+  end_line:
+    description: 'End line'
+    required: false
+  break_build_invalid_policy:
+    description: 'Break build on invalid policy name'
     required: false
 runs:
   using: 'node20'
