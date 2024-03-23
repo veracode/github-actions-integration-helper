@@ -24,6 +24,7 @@ export type Inputs = {
     start_line: number;
     end_line: number;
     break_build_invalid_policy: boolean;
+    filter_mitigated_flaws: boolean;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;
