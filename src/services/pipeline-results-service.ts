@@ -108,23 +108,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     });
   }
 
-  try {
-    const rootDirectory = process.cwd();
-    const filePath = "results_v2.json";
-    
-    await fs.writeFile(filePath, JSON.stringify(policyFindingsToExlcude, null, 2));
-    const artifactClient = new DefaultArtifactClient();
-    const artifactName = 'Veracode Pipeline-Scan Results V2';
-    const files = [
-      'results_v2.json'
-    ]
-    const uploadResult = await artifactClient.uploadArtifact(artifactName, files, rootDirectory);
-    core.info(`Mitigated policy findings uploadResult : ${uploadResult}`);
-  } catch (error) {
-    core.info(`Error while updating the artifact ${error}`);
-  }
-  
-
   core.info(`Mitigated policy findings: ${policyFindingsToExlcude.length}`);
 
   // Remove item in findingsArray if there are item in policyFindingsToExlcude if the file_path and
@@ -142,6 +125,19 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     });
   });
 
+  const filePath = "filtered_results.json";
+  const artifactName = 'Veracode Pipeline-Scan Mitigated Filtered Results';
+  const artifactClient = new DefaultArtifactClient();
+
+  try {
+    const rootDirectory = process.cwd();
+    await fs.writeFile(filePath, JSON.stringify(filteredFindingsArray, null, 2));
+    await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
+    core.info(`${artifactName} directory uploaded successfully under the artifact.`);
+  } catch (error) {
+    core.info(`Error while updating the ${artifactName} artifact ${error}`);
+  }
+  
   core.info(`Filtered pipeline findings: ${filteredFindingsArray.length}`);
 
   if (filteredFindingsArray.length === 0) {
