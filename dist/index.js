@@ -28926,6 +28926,7 @@ async function getResourceByAttribute(vid, vkey, resource) {
         }),
     };
     const appUrl = `https://${app_config_1.default.hostName.veracode}${resourceUri}${urlQueryParams}`;
+    console.log('appUrl', appUrl);
     try {
         const response = await fetch(appUrl, { headers });
         const data = await response.json();
@@ -29564,7 +29565,40 @@ async function getApplicationFindings(appGuid, vid, vkey) {
     console.log('getPolicyFindingsByApplicationResource', getPolicyFindingsByApplicationResource);
     console.log('appGuid', appGuid);
     const findingsResponse = await http.getResourceByAttribute(vid, vkey, getPolicyFindingsByApplicationResource);
-    return findingsResponse._embedded.findings;
+    if (!findingsResponse._embedded) {
+        console.log('No Policy scan found, lets look for sandbox scan findings');
+        const getSandboxGUID = {
+            resourceUri: `${app_config_1.default.api.veracode.applicationUri}/${appGuid}/sandboxes`,
+            queryAttribute: '',
+            queryValue: '',
+        };
+        const sandboxesResponse = await http.getResourceByAttribute(vid, vkey, getSandboxGUID);
+        if (!sandboxesResponse._embedded) {
+            console.log('No Policy scan found and no sandbox scan found.');
+            return [];
+        }
+        else {
+            console.log('Sanbox response: ', sandboxesResponse._embedded.sandboxes[0]);
+            const sandboxGuid = sandboxesResponse._embedded.sandboxes[0].guid;
+            const getPolicyFindingsBySandboxResource = {
+                resourceUri: `${app_config_1.default.api.veracode.findingsUri}/${appGuid}/findings`,
+                queryAttribute: 'context',
+                queryValue: sandboxGuid,
+            };
+            console.log('getPolicyFindingsBySandboxResource', getPolicyFindingsBySandboxResource);
+            const findingsResponse = await http.getResourceByAttribute(vid, vkey, getPolicyFindingsBySandboxResource);
+            if (!findingsResponse._embedded) {
+                console.log('No Policy scan found and no sandbox scan found.');
+                return [];
+            }
+            else {
+                return findingsResponse._embedded.findings;
+            }
+        }
+    }
+    else {
+        return findingsResponse._embedded.findings;
+    }
 }
 exports.getApplicationFindings = getApplicationFindings;
 
