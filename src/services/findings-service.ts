@@ -22,6 +22,9 @@ export async function getApplicationFindings(
     queryValue: '1000',
   };
 
+console.log('getPolicyFindingsByApplicationResource', getPolicyFindingsByApplicationResource);
+console.log('appGuid', appGuid);
+
   const findingsResponse: VeracodePolicyResult.ResultsData =
     await http.getResourceByAttribute<VeracodePolicyResult.ResultsData>(
       vid,
