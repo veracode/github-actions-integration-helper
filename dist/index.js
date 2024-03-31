@@ -28926,7 +28926,6 @@ async function getResourceByAttribute(vid, vkey, resource) {
         }),
     };
     const appUrl = `https://${app_config_1.default.hostName.veracode}${resourceUri}${urlQueryParams}`;
-    console.log('appUrl', appUrl);
     try {
         const response = await fetch(appUrl, { headers });
         const data = await response.json();
@@ -29562,8 +29561,6 @@ async function getApplicationFindings(appGuid, vid, vkey) {
         queryAttribute: 'size',
         queryValue: '1000',
     };
-    console.log('getPolicyFindingsByApplicationResource', getPolicyFindingsByApplicationResource);
-    console.log('appGuid', appGuid);
     const findingsResponse = await http.getResourceByAttribute(vid, vkey, getPolicyFindingsByApplicationResource);
     if (!findingsResponse._embedded) {
         console.log('No Policy scan found, lets look for sandbox scan findings');
@@ -29578,14 +29575,12 @@ async function getApplicationFindings(appGuid, vid, vkey) {
             return [];
         }
         else {
-            console.log('Sanbox response: ', sandboxesResponse._embedded.sandboxes[0]);
             const sandboxGuid = sandboxesResponse._embedded.sandboxes[0].guid;
             const getPolicyFindingsBySandboxResource = {
                 resourceUri: `${app_config_1.default.api.veracode.findingsUri}/${appGuid}/findings`,
                 queryAttribute: 'context',
                 queryValue: sandboxGuid,
             };
-            console.log('getPolicyFindingsBySandboxResource', getPolicyFindingsBySandboxResource);
             const findingsResponse = await http.getResourceByAttribute(vid, vkey, getPolicyFindingsBySandboxResource);
             if (!findingsResponse._embedded) {
                 console.log('No Policy scan found and no sandbox scan found.');

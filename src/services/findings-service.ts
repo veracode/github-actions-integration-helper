@@ -23,9 +23,6 @@ export async function getApplicationFindings(
     queryValue: '1000',
   };
 
-  console.log('getPolicyFindingsByApplicationResource', getPolicyFindingsByApplicationResource);
-  console.log('appGuid', appGuid);
-
   const findingsResponse: VeracodePolicyResult.ResultsData =
     await http.getResourceByAttribute<VeracodePolicyResult.ResultsData>(
       vid,
@@ -53,7 +50,6 @@ export async function getApplicationFindings(
       return []
     }
     else {
-      console.log('Sanbox response: ', sandboxesResponse._embedded.sandboxes[0])
       const sandboxGuid = sandboxesResponse._embedded.sandboxes[0].guid;
       const getPolicyFindingsBySandboxResource = {
         resourceUri: `${appConfig.api.veracode.findingsUri}/${appGuid}/findings`,
@@ -61,7 +57,6 @@ export async function getApplicationFindings(
         queryValue: sandboxGuid,
       };
 
-      console.log('getPolicyFindingsBySandboxResource', getPolicyFindingsBySandboxResource);
       const findingsResponse: VeracodePolicyResult.ResultsData =
         await http.getResourceByAttribute<VeracodePolicyResult.ResultsData>(
           vid,
