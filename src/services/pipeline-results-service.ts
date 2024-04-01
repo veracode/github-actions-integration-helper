@@ -66,7 +66,20 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
 
   core.info(`Pipeline findings: ${findingsArray.length}`);
 
+  const filePath = "filtered_results.json";
+  const artifactName = 'Veracode Pipeline-Scan Mitigated Filtered Results';
+  const rootDirectory = process.cwd();
+  const artifactClient = new DefaultArtifactClient();
+
   if (findingsArray.length === 0) {
+    try {
+      veracodePipelineResult.findings = [];
+      await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
+      await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
+      core.info(`${artifactName} directory uploaded successfully under the artifact.`);
+    } catch (error) {
+      core.info(`Error while updating the ${artifactName} artifact ${error}`);
+    }
     core.info('No pipeline findings, exiting and update the github check status to success');
     // update inputs.check_run_id status to success
     await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings');
@@ -126,13 +139,8 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     });
   });
 
-  const filePath = "filtered_results.json";
-  const artifactName = 'Veracode Pipeline-Scan Mitigated Filtered Results';
-  const artifactClient = new DefaultArtifactClient();
-
   try {
     veracodePipelineResult.findings = filteredFindingsArray;
-    const rootDirectory = process.cwd();
     await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
     await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
     core.info(`${artifactName} directory uploaded successfully under the artifact.`);

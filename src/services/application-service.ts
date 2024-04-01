@@ -21,6 +21,7 @@ export async function getApplicationByName(
 
     const applicationResponse: VeracodeApplication.ResultsData =
       await http.getResourceByAttribute<VeracodeApplication.ResultsData>(vid, vkey, getApplicationByNameResource);
+
     const applications = applicationResponse._embedded?.applications || [];
     if (applications.length === 0) {
       throw new Error(`No application found with name ${appname}`);
