@@ -50,7 +50,18 @@ inputs:
   filter_mitigated_flaws:
     description: 'Filter pipeline scan results based on mitigated flaws (true) or all policy flaws (false)'
     required: false
-    default: false
+  check_run_name:
+    description: 'Check run name'
+    required: false
+  head_sha:
+    description: 'Head SHA of the commit'
+    required: false
+  branch:
+    description: 'Head branch'
+    required: false
+  event_type:
+    description: 'Event type - Describe the policy, pipeline or sandbox scan.'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'

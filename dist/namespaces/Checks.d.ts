@@ -26,3 +26,6 @@ export interface ChecksStatic {
     check_run_id: number;
     status: Status;
 }
+export interface OctokitResponse {
+    id: number;
+}

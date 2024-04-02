@@ -22,3 +22,14 @@ export async function updateChecks(
   };
   await octokit.checks.update(data);
 }
+
+export async function createChecks(
+  octokit: Octokit,
+  owner: string,
+  repo: string,
+  name: string,
+  head_sha: string
+): Promise<number> {
+  const response = await octokit.checks.create({ owner: owner, repo: repo, name: name, head_sha: head_sha});
+  return response.data.id;
+}

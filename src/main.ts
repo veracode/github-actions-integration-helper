@@ -30,9 +30,12 @@ export async function run(): Promise<void> {
     case 'validatePolicyName':
       await applicationService.validatePolicyName(inputs);
       break;
+    case 'registerBuild':
+      await applicationService.registerBuild(inputs);
+      break;
     default:
       core.setFailed(
-        `Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds, validatePolicyName.`,
+        `Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds, validatePolicyName, registerBuild.`,
       );
   }
 }

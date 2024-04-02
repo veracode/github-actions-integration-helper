@@ -2,10 +2,12 @@ import * as core from '@actions/core';
 import appConfig from '../app-config';
 import { Octokit } from '@octokit/rest';
 import * as Checks from '../namespaces/Checks';
-import { updateChecks } from './check-service';
+import { updateChecks, createChecks } from './check-service';
 import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
 import { Inputs, vaildateRemoveSandboxInput } from '../inputs';
+import * as fs from 'fs/promises';
+import { DefaultArtifactClient } from '@actions/artifact';
 
 export async function getApplicationByName(
   appname: string,
@@ -272,5 +274,45 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       'Error while validating policy name.',
     );
     throw error;
+  }
+}
+
+export async function registerBuild(inputs: Inputs): Promise<void> {
+  const filePath = 'workflow-metadata.json';
+  const artifactName = 'workflow-metadata';
+  try {
+    /** 1. Create checks on the user repo
+     *  2. Create the metadata and upload the artifact on the user repo
+     */
+    const octokit = new Octokit({
+      auth: inputs.token,
+    });
+    const repo = inputs.source_repository.split('/');
+    const ownership = {
+      owner: repo[0],
+      repo: repo[1],
+    };
+    const create_check_run_id = await createChecks(
+      octokit,
+      ownership.owner,
+      ownership.repo,
+      inputs.check_run_name,
+      inputs.head_sha
+    );
+    core.debug('Check run ID - '+create_check_run_id);
+    const rootDirectory = process.cwd();
+    const artifactClient = new DefaultArtifactClient();
+    const metadata = {
+      'check_run_type': inputs.event_type,
+      'repository_name': ownership.repo,
+      'check_run_id': create_check_run_id,
+      'branch': inputs.branch,
+      'sha': inputs.head_sha
+    }
+    await fs.writeFile(filePath, JSON.stringify(metadata, null, 2));
+    await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
+    core.info(`${artifactName} directory uploaded successfully under the artifact.`);
+  } catch (error) {
+    core.info(`Error while creating the ${artifactName} artifact ${error}`);
   }
 }

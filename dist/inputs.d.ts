@@ -6,7 +6,8 @@ export declare enum Actions {
     PreparePolicyResults = "preparePolicyResults",
     RemoveSandbox = "removeSandbox",
     ValidateVeracodeApiCreds = "validateVeracodeApiCreds",
-    ValidatePolicyName = "validatePolicyName"
+    ValidatePolicyName = "validatePolicyName",
+    registerBuild = "registerBuild"
 }
 export type Inputs = {
     action: Actions;
@@ -25,6 +26,10 @@ export type Inputs = {
     end_line: number;
     break_build_invalid_policy: boolean;
     filter_mitigated_flaws: boolean;
+    check_run_name: string;
+    head_sha: string;
+    branch: string;
+    event_type: string;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;

@@ -8,7 +8,8 @@ export enum Actions {
   PreparePolicyResults = 'preparePolicyResults',
   RemoveSandbox = 'removeSandbox',
   ValidateVeracodeApiCreds = 'validateVeracodeApiCreds',
-  ValidatePolicyName = 'validatePolicyName'
+  ValidatePolicyName = 'validatePolicyName',
+  registerBuild = 'registerBuild'
 }
 
 export type Inputs = {
@@ -28,6 +29,10 @@ export type Inputs = {
   end_line: number;
   break_build_invalid_policy: boolean;
   filter_mitigated_flaws: boolean;
+  check_run_name: string;
+  head_sha: string;
+  branch: string;
+  event_type: string;
 };
 
 export const parseInputs = (getInput: GetInput): Inputs => {
@@ -59,6 +64,10 @@ export const parseInputs = (getInput: GetInput): Inputs => {
   const end_line = getInput('end_line');
   const break_build_invalid_policy = getInput('break_build_invalid_policy') === 'true';
 
+  const check_run_name = getInput('check_run_name');
+  const head_sha = getInput('head_sha');
+  const branch = getInput('branch');
+  const event_type = getInput('event_type');
 
   if (source_repository && source_repository.split('/').length !== 2) {
     throw new Error('source_repository needs to be in the {owner}/{repo} format');
@@ -67,7 +76,7 @@ export const parseInputs = (getInput: GetInput): Inputs => {
   return { action, token, check_run_id: +check_run_id, vid, vkey, appname, 
     source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname,
     policyname, path, start_line: +start_line, end_line: +end_line, break_build_invalid_policy,
-    filter_mitigated_flaws
+    filter_mitigated_flaws, check_run_name, head_sha, branch, event_type
    };
 };
 
