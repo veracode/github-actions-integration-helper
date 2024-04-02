@@ -67,7 +67,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   core.info(`Pipeline findings: ${findingsArray.length}`);
 
   const filePath = "filtered_results.json";
-  const artifactName = 'Veracode Pipeline-Scan Mitigated Filtered Results';
+  const artifactName = 'Veracode Pipeline-Scan result - mitigated findings';
   const rootDirectory = process.cwd();
   const artifactClient = new DefaultArtifactClient();
 
