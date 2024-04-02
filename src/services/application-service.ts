@@ -292,20 +292,20 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
       owner: repo[0],
       repo: repo[1],
     };
-    const create_check_run_id = await createChecks(
-      octokit,
-      ownership.owner,
-      ownership.repo,
-      inputs.check_run_name,
-      inputs.head_sha
-    );
-    core.debug('Check run ID - '+create_check_run_id);
+    // const create_check_run_id = await createChecks(
+    //   octokit,
+    //   ownership.owner,
+    //   ownership.repo,
+    //   inputs.check_run_name,
+    //   inputs.head_sha
+    // );
+    // core.debug('Check run ID - '+create_check_run_id);
     const rootDirectory = process.cwd();
     const artifactClient = new DefaultArtifactClient();
     const metadata = {
       'check_run_type': inputs.event_type,
       'repository_name': ownership.repo,
-      'check_run_id': create_check_run_id,
+      'check_run_id': inputs.check_run_id,
       'branch': inputs.branch,
       'sha': inputs.head_sha
     }
