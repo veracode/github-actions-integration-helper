@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import appConfig from '../app-config';
 import { Octokit } from '@octokit/rest';
 import * as Checks from '../namespaces/Checks';
-import { updateChecks, createChecks } from './check-service';
+import { updateChecks } from './check-service';
 import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
 import { Inputs, vaildateRemoveSandboxInput } from '../inputs';
@@ -281,25 +281,11 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
   const filePath = 'workflow-metadata.json';
   const artifactName = 'workflow-metadata';
   try {
-    /** 1. Create checks on the user repo
-     *  2. Create the metadata and upload the artifact on the user repo
-     */
-    const octokit = new Octokit({
-      auth: inputs.token,
-    });
     const repo = inputs.source_repository.split('/');
     const ownership = {
       owner: repo[0],
       repo: repo[1],
     };
-    // const create_check_run_id = await createChecks(
-    //   octokit,
-    //   ownership.owner,
-    //   ownership.repo,
-    //   inputs.check_run_name,
-    //   inputs.head_sha
-    // );
-    // core.debug('Check run ID - '+create_check_run_id);
     const rootDirectory = process.cwd();
     const artifactClient = new DefaultArtifactClient();
     const metadata = {
