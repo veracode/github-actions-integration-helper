@@ -30,6 +30,7 @@ export type Inputs = {
     head_sha: string;
     branch: string;
     event_type: string;
+    issue_trigger_flow: string;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;

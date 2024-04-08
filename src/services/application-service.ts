@@ -293,7 +293,8 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
       'repository_name': ownership.repo,
       'check_run_id': inputs.check_run_id,
       'branch': inputs.branch,
-      'sha': inputs.head_sha
+      'sha': inputs.head_sha,
+      'issue_trigger_flow': inputs.issue_trigger_flow ?? false,
     }
     await fs.writeFile(filePath, JSON.stringify(metadata, null, 2));
     await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
