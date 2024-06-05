@@ -7,6 +7,7 @@ export async function updateChecks(
   conclusion: Checks.Conclusion,
   annotations: Checks.Annotation[],
   summary: string,
+  title: string,
 ): Promise<void> {
   const data = {
     owner: checksStatic.owner,
@@ -16,7 +17,7 @@ export async function updateChecks(
     conclusion: conclusion,
     output: {
       annotations: annotations as [],
-      title: 'Veracode Static Code Analysis',
+      title: title,
       summary: summary,
     },
   };
@@ -28,8 +29,8 @@ export async function createChecks(
   owner: string,
   repo: string,
   name: string,
-  head_sha: string
+  head_sha: string,
 ): Promise<number> {
-  const response = await octokit.checks.create({ owner: owner, repo: repo, name: name, head_sha: head_sha});
+  const response = await octokit.checks.create({ owner: owner, repo: repo, name: name, head_sha: head_sha });
   return response.data.id;
 }
