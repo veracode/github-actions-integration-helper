@@ -8,9 +8,10 @@
     "check-types": "tsc --noEmit",
     "build": "tsc",
     "pack": "ncc build src/index.ts -o dist",
-    "test": "npm run test",
+    "test": "npm run test:unit",
+    "test:coverage": "jest --clearCache && npm run test:unit:coverage",
     "test:unit": "jest --config ./test/unit/jest.config.ts ./test/unit",
-    "test:coverage": "jest --clearCache && jest --coverage",
+    "test:unit:coverage": "jest --coverage --config ./test/unit/jest.config.ts ./test/unit",
     "lint": "eslint . 'src/**/*.ts'",
     "prettier": "prettier --write . 'src/**/*.ts'"
   },
