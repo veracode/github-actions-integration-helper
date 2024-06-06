@@ -65,6 +65,7 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
   core.info(`Results URL: ${resultsUrl}`);
   if (findingsArray.length === 0) {
     core.info('No findings violates the policy, exiting and update the github check status to success');
+    core.info(`The full report can be found [here](${resultsUrl})`);
     // update inputs.check_run_id status to success
     await updateChecks(
       octokit,
