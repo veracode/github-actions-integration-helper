@@ -14,6 +14,12 @@ export enum Status {
   Completed = 'completed',
 }
 
+export enum ScanType {
+  Policy = 'policy',
+  Pipeline = 'pipeline',
+  None = 'none'
+}
+
 export interface Annotation {
   path: string;
   start_line: number | null;

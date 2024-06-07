@@ -142,6 +142,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
         Checks.Conclusion.Failure,
         annotations,
         'Missing VERACODE_API_ID / VERACODE_API_KEY secret key.',
+        Checks.ScanType.None,
       );
       return;
     }
@@ -172,6 +173,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
         Checks.Conclusion.Failure,
         annotations,
         'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
+        Checks.ScanType.None,
       );
       return;
     }
@@ -184,6 +186,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
       Checks.Conclusion.Failure,
       [],
       'Error while validating Veracode API credentials.',
+      Checks.ScanType.None,
     );
     throw error;
   }
@@ -228,6 +231,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
         Checks.Conclusion.Failure,
         annotations,
         'Missing Veracode Policy name in the config.',
+        Checks.ScanType.Policy,
       );
       return;
     }
@@ -257,6 +261,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
         Checks.Conclusion.Failure,
         annotations,
         'Please check the policy name provided in the config file.',
+        Checks.ScanType.Policy,
       );
       if (inputs.break_build_invalid_policy == true) {
         core.setFailed('Invalid Veracode Policy name.')
@@ -272,6 +277,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       Checks.Conclusion.Failure,
       [],
       'Error while validating policy name.',
+      Checks.ScanType.Policy,
     );
     throw error;
   }

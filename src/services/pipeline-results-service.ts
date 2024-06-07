@@ -40,6 +40,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
       inputs.fail_checks_on_error ? Checks.Conclusion.Failure: Checks.Conclusion.Success,
       [],
       'Token, check_run_id and source_repository are required.',
+      Checks.ScanType.Pipeline
     );
     return;
   }
@@ -60,6 +61,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
       inputs.fail_checks_on_error ? Checks.Conclusion.Failure: Checks.Conclusion.Success,
       [],
       'Error reading or parsing pipeline scan results.',
+      Checks.ScanType.Pipeline
     );
     return;
   }
@@ -82,7 +84,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     }
     core.info('No pipeline findings, exiting and update the github check status to success');
     // update inputs.check_run_id status to success
-    await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings');
+    await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings', Checks.ScanType.Pipeline);
     return;
   }
 
@@ -153,7 +155,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   if (filteredFindingsArray.length === 0) {
     core.info('No pipeline findings after filtering, exiting and update the github check status to success');
     // update inputs.check_run_id status to success
-    await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings');
+    await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings', Checks.ScanType.Pipeline);
     return;
   } else {
     // use octokit to check the language of the source repository. If it is a java project, then
@@ -199,6 +201,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
           inputs.fail_checks_on_policy ? Checks.Conclusion.Failure: Checks.Conclusion.Success,
           annotationBatch,
           'Here\'s the summary of the scan result.',
+          Checks.ScanType.Pipeline,
         )
       }
     }

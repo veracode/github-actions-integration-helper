@@ -7,7 +7,9 @@ export async function updateChecks(
   conclusion: Checks.Conclusion,
   annotations: Checks.Annotation[],
   summary: string,
+  scan_type: Checks.ScanType,
 ): Promise<void> {
+  const type = scan_type == Checks.ScanType.Policy ? " - Policy Scan" : "";
   const data = {
     owner: checksStatic.owner,
     repo: checksStatic.repo,
@@ -16,7 +18,7 @@ export async function updateChecks(
     conclusion: conclusion,
     output: {
       annotations: annotations as [],
-      title: 'Veracode Static Code Analysis',
+      title: `Veracode Static Code Analysis${type}`,
       summary: summary,
     },
   };
