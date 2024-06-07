@@ -64,7 +64,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     return;
   }
 
-  core.info('Jake rocks!');
   core.info(`Pipeline findings: ${findingsArray.length}`);
 
   const filePath = 'filtered_results.json';

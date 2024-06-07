@@ -17,8 +17,7 @@ export async function updateChecks(
     output: {
       annotations: annotations as [],
       title: 'Veracode Static Code Analysis',
-      text: 'this is a text field',
-      summary: summary + ' David is so cool',
+      summary: summary,
     },
   };
   await octokit.checks.update(data);
