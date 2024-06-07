@@ -1,0 +1,24 @@
+{
+  "_embedded": {
+    "findings": []
+  },
+  "_links": {
+    "self": {
+      "href": "https://api.veracode.com/appsec/v2/applications/9ced9449-eb65-4629-9451-2e5b45afa923/findings?violates_policy=true{&context,severity,severity_gte,cwe,finding_category,cvss,cvss_gte,cve,include_annot,new,include_exp_date,mitigated_after,sca_scan_mode,sca_dep_mode,scan_type}",
+      "templated": true
+    },
+    "application": {
+      "href": "https://api.veracode.com/appsec/v1/applications/9ced9449-eb65-4629-9451-2e5b45afa923"
+    },
+    "sca": {
+      "href": "https://api.veracode.com/appsec/v2/applications/9ced9449-eb65-4629-9451-2e5b45afa923/findings?violates_policy=true&scan_type=SCA{&context,severity,severity_gte,cwe,finding_category,cvss,cvss_gte,cve,include_annot,new,include_exp_date,mitigated_after,sca_scan_mode,sca_dep_mode}",
+      "templated": true
+    }
+  },
+  "page": {
+    "size": 20,
+    "total_elements": 0,
+    "total_pages": 0,
+    "number": 0
+  }
+}
