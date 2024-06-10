@@ -30,14 +30,14 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     auth: inputs.token,
   });
 
-  // When the action is preparePolicyResults, need to make sure token, 
+  // When the action is preparePolicyResults, need to make sure token,
   // check_run_id and source_repository are provided
-  if(!vaildateScanResultsActionInput(inputs)) {
+  if (!vaildateScanResultsActionInput(inputs)) {
     core.setFailed('token, check_run_id and source_repository are required.');
     await updateChecks(
       octokit,
       checkStatic,
-      inputs.fail_checks_on_error ? Checks.Conclusion.Failure: Checks.Conclusion.Success,
+      inputs.fail_checks_on_error ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
       [],
       'Token, check_run_id and source_repository are required.',
       Checks.ScanType.Pipeline
@@ -58,7 +58,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     await updateChecks(
       octokit,
       checkStatic,
-      inputs.fail_checks_on_error ? Checks.Conclusion.Failure: Checks.Conclusion.Success,
+      inputs.fail_checks_on_error ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
       [],
       'Error reading or parsing pipeline scan results.',
       Checks.ScanType.Pipeline
@@ -88,7 +88,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     return;
   }
 
-  let policyFindings:VeracodePolicyResult.Finding[] = [];
+  let policyFindings: VeracodePolicyResult.Finding[] = [];
 
   try {
     const application = await getApplicationByName(inputs.appname, inputs.vid, inputs.vkey);
@@ -98,7 +98,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     core.info(`No application found with name ${inputs.appname}`);
     policyFindings = [];
   }
-  
 
   // What if no policy scan?
   core.info(`Policy findings: ${policyFindings.length}`);
@@ -149,7 +148,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   } catch (error) {
     core.info(`Error while updating the ${artifactName} artifact ${error}`);
   }
-  
+
   core.info(`Filtered pipeline findings: ${filteredFindingsArray.length}`);
 
   if (filteredFindingsArray.length === 0) {
@@ -190,19 +189,16 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     const maxNumberOfAnnotations = 50;
 
     for (let index = 0; index < annotations.length / maxNumberOfAnnotations; index++) {
-      const annotationBatch = annotations.slice(
-        index * maxNumberOfAnnotations, 
-        (index + 1) * maxNumberOfAnnotations
-      );
+      const annotationBatch = annotations.slice(index * maxNumberOfAnnotations, (index + 1) * maxNumberOfAnnotations);
       if (annotationBatch.length > 0) {
         await updateChecks(
           octokit,
           checkStatic,
-          inputs.fail_checks_on_policy ? Checks.Conclusion.Failure: Checks.Conclusion.Success,
+          inputs.fail_checks_on_policy ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
           annotationBatch,
-          'Here\'s the summary of the scan result.',
+          "Here's the summary of the scan result.",
           Checks.ScanType.Pipeline,
-        )
+        );
       }
     }
   }

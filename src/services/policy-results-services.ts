@@ -7,7 +7,6 @@ import * as Checks from '../namespaces/Checks';
 import { updateChecks } from './check-service';
 
 export async function preparePolicyResults(inputs: Inputs): Promise<void> {
-
   const octokit = new Octokit({
     auth: inputs.token,
   });
@@ -25,15 +24,15 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
     status: Checks.Status.Completed,
   };
 
-  // When the action is preparePolicyResults, need to make sure token, 
+  // When the action is preparePolicyResults, need to make sure token,
   // check_run_id and source_repository are provided
-  if(!vaildateScanResultsActionInput(inputs)) {
+  if (!vaildateScanResultsActionInput(inputs)) {
     core.setFailed('token, check_run_id and source_repository are required.');
     // TODO: Based on the veracode.yml, update the checks status to failure or pass
     await updateChecks(
       octokit,
       checkStatic,
-      inputs.fail_checks_on_error ? Checks.Conclusion.Failure: Checks.Conclusion.Success,
+      inputs.fail_checks_on_error ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
       [],
       'Token, check_run_id and source_repository are required.',
       Checks.ScanType.Policy
@@ -56,7 +55,7 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
     await updateChecks(
       octokit,
       checkStatic,
-      inputs.fail_checks_on_error ? Checks.Conclusion.Failure: Checks.Conclusion.Success,
+      inputs.fail_checks_on_error ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
       [],
       'Error reading or parsing pipeline scan results.',
       Checks.ScanType.Policy,
@@ -69,7 +68,13 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
   if (findingsArray.length === 0) {
     core.info('No findings violates the policy, exiting and update the github check status to success');
     // update inputs.check_run_id status to success
-    await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No policy violated findings', Checks.ScanType.Policy);
+    await updateChecks(
+      octokit,
+      checkStatic,
+      Checks.Conclusion.Success,
+      [],
+      `No policy violated findings, the full report can be found [here](${resultsUrl}).`,
+    );
     return;
   } else {
     core.info('Findings violate the policy, exiting and update the github check status to failure');
@@ -103,15 +108,12 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
     const maxNumberOfAnnotations = 50;
 
     for (let index = 0; index < annotations.length / maxNumberOfAnnotations; index++) {
-      const annotationBatch = annotations.slice(
-        index * maxNumberOfAnnotations, 
-        (index + 1) * maxNumberOfAnnotations
-      );
+      const annotationBatch = annotations.slice(index * maxNumberOfAnnotations, (index + 1) * maxNumberOfAnnotations);
       if (annotationBatch.length > 0) {
         await updateChecks(
           octokit,
           checkStatic,
-          inputs.fail_checks_on_policy ? Checks.Conclusion.Failure: Checks.Conclusion.Success,
+          inputs.fail_checks_on_policy ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
           annotationBatch,
           `Here's the summary of the check result, the full report can be found [here](${resultsUrl}).`,
           Checks.ScanType.Policy
@@ -122,19 +124,22 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
   }
 }
 
-function getAnnotations (policyFindings: VeracodePolicyResult.Finding[], javaMaven: boolean): Checks.Annotation[] {
+function getAnnotations(policyFindings: VeracodePolicyResult.Finding[], javaMaven: boolean): Checks.Annotation[] {
   const annotations: Checks.Annotation[] = [];
   policyFindings.forEach(function (element) {
     if (javaMaven) {
       element.finding_details.file_path = `src/main/java/${element.finding_details.file_path}`;
       if (element.finding_details.file_path.includes('WEB-INF'))
-      element.finding_details.file_path = element.finding_details.file_path.replace(
+        element.finding_details.file_path = element.finding_details.file_path.replace(
           /src\/main\/java\//, // Use regular expression for precise replacement
           'src/main/webapp/',
         );
     }
 
-    const displayMessage = element.description.replace(/<span>/g, '').replace(/<\/span> /g, '\n').replace(/<\/span>/g, '');
+    const displayMessage = element.description
+      .replace(/<span>/g, '')
+      .replace(/<\/span> /g, '\n')
+      .replace(/<\/span>/g, '');
     let filePath = element.finding_details.file_path;
     if (filePath.startsWith('/')) filePath = filePath.substring(1);
     const message = `Filename: ${filePath}\nLine: ${element.finding_details.file_line_number}\nCWE: ${element.finding_details.cwe.id} (${element.finding_details.cwe.name})\n\n${displayMessage}`;
