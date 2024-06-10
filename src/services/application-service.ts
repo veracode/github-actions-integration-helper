@@ -119,6 +119,10 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     auth: inputs.token,
   });
 
+  const checkRun = await octokit.checks.get({ ...ownership, check_run_id: inputs.check_run_id });
+  const title = checkRun.data.output.title || '';
+  const scanType = /Policy/.test(title) ? Checks.ScanType.Policy : Checks.ScanType.Pipeline;
+
   const checkStatic: Checks.ChecksStatic = {
     owner: ownership.owner,
     repo: ownership.repo,
@@ -142,7 +146,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
         Checks.Conclusion.Failure,
         annotations,
         'Missing VERACODE_API_ID / VERACODE_API_KEY secret key.',
-        Checks.ScanType.None,
+        scanType,
       );
       return;
     }
@@ -173,7 +177,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
         Checks.Conclusion.Failure,
         annotations,
         'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
-        Checks.ScanType.None,
+        scanType,
       );
       return;
     }
@@ -186,7 +190,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
       Checks.Conclusion.Failure,
       [],
       'Error while validating Veracode API credentials.',
-      Checks.ScanType.None,
+      scanType,
     );
     throw error;
   }
