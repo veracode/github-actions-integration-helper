@@ -9,18 +9,34 @@ export async function updateChecks(
   summary: string,
   scan_type: Checks.ScanType,
 ): Promise<void> {
-  const type = scan_type == Checks.ScanType.Policy ? " - Policy Scan" : "";
-  const data = {
-    owner: checksStatic.owner,
-    repo: checksStatic.repo,
-    check_run_id: checksStatic.check_run_id,
-    status: checksStatic.status,
-    conclusion: conclusion,
-    output: {
-      annotations: annotations as [],
-      summary: summary,
-    },
-  };
+  const type = scan_type == Checks.ScanType.Policy ? ' - Policy Scan' : '';
+  let data;
+  if (scan_type !== Checks.ScanType.Policy) {
+    data = {
+      owner: checksStatic.owner,
+      repo: checksStatic.repo,
+      check_run_id: checksStatic.check_run_id,
+      status: checksStatic.status,
+      conclusion: conclusion,
+      output: {
+        annotations: annotations as [],
+        summary: summary + ' >>> UPATED',
+      },
+    };
+  } else {
+    data = {
+      owner: checksStatic.owner,
+      repo: checksStatic.repo,
+      check_run_id: checksStatic.check_run_id,
+      status: checksStatic.status,
+      conclusion: conclusion,
+      output: {
+        annotations: annotations as [],
+        title: `Veracode Static Code Analysis${type}`,
+        summary: summary + ' >>> UPATED2',
+      },
+    };
+  }
   await octokit.checks.update(data);
 }
 
