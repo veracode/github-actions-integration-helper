@@ -74,6 +74,7 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
       Checks.Conclusion.Success,
       [],
       `No policy violated findings, the full report can be found [here](${resultsUrl}).`,
+      Checks.ScanType.Policy
     );
     return;
   } else {

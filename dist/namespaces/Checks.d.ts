@@ -12,6 +12,11 @@ export declare enum Status {
     InProgress = "in_progress",
     Completed = "completed"
 }
+export declare enum ScanType {
+    Policy = "policy",
+    Pipeline = "pipeline",
+    None = "none"
+}
 export interface Annotation {
     path: string;
     start_line: number | null;

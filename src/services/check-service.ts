@@ -18,7 +18,6 @@ export async function updateChecks(
     conclusion: conclusion,
     output: {
       annotations: annotations as [],
-      title: `Veracode Static Code Analysis${type}`,
       summary: summary,
     },
   };
