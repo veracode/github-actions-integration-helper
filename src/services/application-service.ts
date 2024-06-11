@@ -111,8 +111,10 @@ async function getSandboxesByApplicationGuid(
   }
 }
 
+// TODO: let's update this to return the title and just pass the title into updateChecks instead of ScanType
 async function getScanType(octokit: Octokit, checkRunInfo: { owner: string; repo: string; check_run_id: number }) {
   const checkRun = await octokit.checks.get(checkRunInfo);
+  core.info(`Found check run with title: ${checkRun.data.output.title}`);
   const title = checkRun.data.output.title || '';
   return /Policy/.test(title) ? Checks.ScanType.Policy : Checks.ScanType.Pipeline;
 }
