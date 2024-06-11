@@ -9,7 +9,7 @@ export async function updateChecks(
   summary: string,
   scan_type: Checks.ScanType,
 ): Promise<void> {
-  const type = scan_type == Checks.ScanType.Policy ? " - Policy Scan" : "";
+  const type = scan_type == Checks.ScanType.Policy ? ' - Policy Scan' : '';
   const data = {
     owner: checksStatic.owner,
     repo: checksStatic.repo,
@@ -30,8 +30,8 @@ export async function createChecks(
   owner: string,
   repo: string,
   name: string,
-  head_sha: string
+  head_sha: string,
 ): Promise<number> {
-  const response = await octokit.checks.create({ owner: owner, repo: repo, name: name, head_sha: head_sha});
+  const response = await octokit.checks.create({ owner: owner, repo: repo, name: name, head_sha: head_sha });
   return response.data.id;
 }

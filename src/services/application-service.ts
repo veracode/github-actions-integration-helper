@@ -39,7 +39,7 @@ export async function getApplicationByName(
 }
 
 export async function removeSandbox(inputs: Inputs): Promise<void> {
-  if(!vaildateRemoveSandboxInput(inputs)) {
+  if (!vaildateRemoveSandboxInput(inputs)) {
     core.setFailed('sandboxname is required.');
   }
   const appname = inputs.appname;
@@ -47,7 +47,7 @@ export async function removeSandbox(inputs: Inputs): Promise<void> {
   const vkey = inputs.vkey;
   const sandboxName = inputs.sandboxname;
 
-  let application:VeracodeApplication.Application;
+  let application: VeracodeApplication.Application;
 
   try {
     application = await getApplicationByName(appname, vid, vkey);
@@ -71,7 +71,7 @@ export async function removeSandbox(inputs: Inputs): Promise<void> {
     core.setFailed(`No sandbox found with name ${sandboxName}`);
     return;
   }
-  
+
   try {
     const removeSandboxResource = {
       resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
@@ -86,9 +86,9 @@ export async function removeSandbox(inputs: Inputs): Promise<void> {
 }
 
 async function getSandboxesByApplicationGuid(
-  appGuid: string, 
-  vid: string, 
-  vkey: string
+  appGuid: string,
+  vid: string,
+  vkey: string,
 ): Promise<VeracodeApplication.Sandbox[]> {
   try {
     const getSandboxesByApplicationGuidResource = {
@@ -98,13 +98,23 @@ async function getSandboxesByApplicationGuid(
     };
 
     const sandboxResponse: VeracodeApplication.SandboxResultsData =
-      await http.getResourceByAttribute<VeracodeApplication.SandboxResultsData>(vid, vkey, getSandboxesByApplicationGuidResource);
+      await http.getResourceByAttribute<VeracodeApplication.SandboxResultsData>(
+        vid,
+        vkey,
+        getSandboxesByApplicationGuidResource,
+      );
 
     return sandboxResponse._embedded?.sandboxes || [];
   } catch (error) {
     console.error(error);
     throw error;
   }
+}
+
+async function getScanType(octokit: Octokit, checkRunInfo: { owner: string; repo: string; check_run_id: number }) {
+  const checkRun = await octokit.checks.get(checkRunInfo);
+  const title = checkRun.data.output.title || '';
+  return /Policy/.test(title) ? Checks.ScanType.Policy : Checks.ScanType.Pipeline;
 }
 
 export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string | void> {
@@ -119,9 +129,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     auth: inputs.token,
   });
 
-  const checkRun = await octokit.checks.get({ ...ownership, check_run_id: inputs.check_run_id });
-  const title = checkRun.data.output.title || '';
-  const scanType = /Policy/.test(title) ? Checks.ScanType.Policy : Checks.ScanType.Pipeline;
+  const scanType = await getScanType(octokit, { ...ownership, check_run_id: inputs.check_run_id });
 
   const checkStatic: Checks.ChecksStatic = {
     owner: ownership.owner,
@@ -157,10 +165,16 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     };
 
     const applicationResponse: VeracodeApplication.SelfUserResultsData =
-      await http.getResourceByAttribute<VeracodeApplication.SelfUserResultsData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
+      await http.getResourceByAttribute<VeracodeApplication.SelfUserResultsData>(
+        inputs.vid,
+        inputs.vkey,
+        getSelfUserDetailsResource,
+      );
 
     if (applicationResponse && applicationResponse?.api_credentials?.expiration_ts) {
-      core.info(`VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
+      core.info(
+        `VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`,
+      );
     } else {
       core.setFailed('Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
       annotations.push({
@@ -208,6 +222,8 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
     auth: inputs.token,
   });
 
+  const scanType = await getScanType(octokit, { ...ownership, check_run_id: inputs.check_run_id });
+
   const checkStatic: Checks.ChecksStatic = {
     owner: ownership.owner,
     repo: ownership.repo,
@@ -217,9 +233,9 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
   try {
     if (!inputs.policyname) {
       if (inputs.break_build_invalid_policy == true) {
-        core.setFailed('Missing Veracode Policy name in the config.')
+        core.setFailed('Missing Veracode Policy name in the config.');
       } else {
-        core.error('Missing Veracode Policy name in the config.')
+        core.error('Missing Veracode Policy name in the config.');
       }
       annotations.push({
         path: '/',
@@ -235,7 +251,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
         Checks.Conclusion.Failure,
         annotations,
         'Missing Veracode Policy name in the config.',
-        Checks.ScanType.Policy,
+        scanType,
       );
       return;
     }
@@ -255,7 +271,11 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
     });
 
     const applicationResponse: VeracodeApplication.policyResultsData =
-      await http.getResourceByAttribute<VeracodeApplication.policyResultsData>(inputs.vid, inputs.vkey, getPolicyResource);
+      await http.getResourceByAttribute<VeracodeApplication.policyResultsData>(
+        inputs.vid,
+        inputs.vkey,
+        getPolicyResource,
+      );
 
     core.setOutput('total_elements', applicationResponse?.page?.total_elements);
     if (applicationResponse && applicationResponse?.page?.total_elements != 1) {
@@ -265,12 +285,12 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
         Checks.Conclusion.Failure,
         annotations,
         'Please check the policy name provided in the config file.',
-        Checks.ScanType.Policy,
+        scanType,
       );
       if (inputs.break_build_invalid_policy == true) {
-        core.setFailed('Invalid Veracode Policy name.')
+        core.setFailed('Invalid Veracode Policy name.');
       } else {
-        core.error('Invalid Veracode Policy name.')
+        core.error('Invalid Veracode Policy name.');
       }
     }
   } catch (error) {
@@ -281,7 +301,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       Checks.Conclusion.Failure,
       [],
       'Error while validating policy name.',
-      Checks.ScanType.Policy,
+      scanType,
     );
     throw error;
   }
@@ -299,13 +319,13 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
     const rootDirectory = process.cwd();
     const artifactClient = new DefaultArtifactClient();
     const metadata = {
-      'check_run_type': inputs.event_type,
-      'repository_name': ownership.repo,
-      'check_run_id': inputs.check_run_id,
-      'branch': inputs.branch,
-      'sha': inputs.head_sha,
-      'issue_trigger_flow': inputs.issue_trigger_flow ?? false,
-    }
+      check_run_type: inputs.event_type,
+      repository_name: ownership.repo,
+      check_run_id: inputs.check_run_id,
+      branch: inputs.branch,
+      sha: inputs.head_sha,
+      issue_trigger_flow: inputs.issue_trigger_flow ?? false,
+    };
     await fs.writeFile(filePath, JSON.stringify(metadata, null, 2));
     await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
     core.info(`${artifactName} directory uploaded successfully under the artifact.`);
