@@ -16,19 +16,19 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
   const resourceUri = resource.resourceUri;
   const queryAttribute = resource.queryAttribute;
   const queryValue = resource.queryValue;
-
+  const host = vid.startsWith('vera01ei-') ? appConfig.hostName.veracode.eu : appConfig.hostName.veracode.us;
   const urlQueryParams = queryAttribute !== '' ? `?${queryAttribute}=${queryValue}` : '';
   const queryUrl = resourceUri + urlQueryParams;
   const headers = {
     Authorization: calculateAuthorizationHeader({
       id: vid,
       key: vkey,
-      host: appConfig.hostName.veracode,
+      host,
       url: queryUrl,
       method: 'GET',
     }),
   };
-  const appUrl = `https://${appConfig.hostName.veracode}${resourceUri}${urlQueryParams}`;
+  const appUrl = `https://${host}${resourceUri}${urlQueryParams}`;
   try {
     const response = await fetch(appUrl, { headers });
     const data = await response.json();
@@ -41,18 +41,18 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
 export async function deleteResourceById(vid: string, vkey: string, resource: ResourceById): Promise<void> {
   const resourceUri = resource.resourceUri;
   const resourceId = resource.resourceId;
-
+  const host = vid.startsWith('vera01ei-') ? appConfig.hostName.veracode.eu : appConfig.hostName.veracode.us;
   const queryUrl = `${resourceUri}/${resourceId}`;
   const headers = {
     Authorization: calculateAuthorizationHeader({
       id: vid,
       key: vkey,
-      host: appConfig.hostName.veracode,
+      host,
       url: queryUrl,
       method: 'DELETE',
     }),
   };
-  const appUrl = `https://${appConfig.hostName.veracode}${resourceUri}/${resourceId}`;
+  const appUrl = `https://${host}${resourceUri}/${resourceId}`;
   try {
     await fetch(appUrl, { method: 'DELETE', headers });
   } catch (error) {
