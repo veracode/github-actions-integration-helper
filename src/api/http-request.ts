@@ -18,7 +18,7 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
   const queryAttribute = resource.queryAttribute;
   const queryValue = resource.queryValue;
   const host = vid.startsWith('vera01ei-') ? appConfig.hostName.veracode.eu : appConfig.hostName.veracode.us;
-  core.debug(`Host URL for getResourceByAttribute: ${host}`);
+  core.info(`Host URL for getResourceByAttribute: ${host}`);
   const urlQueryParams = queryAttribute !== '' ? `?${queryAttribute}=${queryValue}` : '';
   const queryUrl = resourceUri + urlQueryParams;
   const headers = {
@@ -44,7 +44,7 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
   const resourceUri = resource.resourceUri;
   const resourceId = resource.resourceId;
   const host = vid.startsWith('vera01ei-') ? appConfig.hostName.veracode.eu : appConfig.hostName.veracode.us;
-  core.debug(`Host URL for deleteResourceById: ${host}`);
+  core.info(`Host URL for deleteResourceById: ${host}`);
   const queryUrl = `${resourceUri}/${resourceId}`;
   const headers = {
     Authorization: calculateAuthorizationHeader({
