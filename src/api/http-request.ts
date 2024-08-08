@@ -25,12 +25,13 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
     Authorization: calculateAuthorizationHeader({
       id: vid,
       key: vkey,
-      host,
+      host: host,
       url: queryUrl,
       method: 'GET',
     }),
   };
   const appUrl = `https://${host}${resourceUri}${urlQueryParams}`;
+  core.info(`appURL getResourceByAttribute: ${appUrl}`);
   try {
     const response = await fetch(appUrl, { headers });
     const data = await response.json();
@@ -50,7 +51,7 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
     Authorization: calculateAuthorizationHeader({
       id: vid,
       key: vkey,
-      host,
+      host: host,
       url: queryUrl,
       method: 'DELETE',
     }),
