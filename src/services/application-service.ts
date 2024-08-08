@@ -249,6 +249,7 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
     const applicationResponse: VeracodeApplication.policyResultsData =
       await http.getResourceByAttribute<VeracodeApplication.policyResultsData>(inputs.vid, inputs.vkey, getPolicyResource);
 
+    core.info(`Policy name response - ${JSON.stringify(applicationResponse)}`);
     core.setOutput('total_elements', applicationResponse?.page?.total_elements);
     if (applicationResponse && applicationResponse?.page?.total_elements != 1) {
       await updateChecks(
