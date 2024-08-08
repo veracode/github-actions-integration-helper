@@ -157,6 +157,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     if (applicationResponse && applicationResponse?.api_credentials?.expiration_ts) {
       core.info(`VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
     } else {
+      core.debug(`Validate API response - ${applicationResponse}`);
       core.setFailed('Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
       annotations.push({
         path: '/',
