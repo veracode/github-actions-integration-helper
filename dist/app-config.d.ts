@@ -1,6 +1,9 @@
 interface AppConfig {
     hostName: {
-        veracode: string;
+        veracode: {
+            us: string;
+            eu: string;
+        };
         github: string;
     };
     api: {
