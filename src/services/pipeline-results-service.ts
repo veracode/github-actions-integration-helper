@@ -47,7 +47,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   let findingsArray: VeracodePipelineResult.Finding[] = [];
   let veracodePipelineResult;
   try {
-    const data = await fs.readFile('filtered_results.json', 'utf-8');
+    const data = await fs.readFile(inputs.filtered_results_file, 'utf-8');
     const parsedData: VeracodePipelineResult.ResultsData = JSON.parse(data);
     findingsArray = parsedData.findings;
     veracodePipelineResult = JSON.parse(data);
@@ -66,8 +66,8 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
 
   core.info(`Pipeline findings: ${findingsArray.length}`);
 
-  const filePath = 'filtered_results.json';
-  const artifactName = 'Veracode Pipeline-Scan Results - Mitigated findings';
+  const filePath = 'mitigated_'+inputs.filtered_results_file;
+  const artifactName = 'Veracode Pipeline-Scan Results - '+inputs.filtered_results_file+' - Mitigated findings';
   const rootDirectory = process.cwd();
   const artifactClient = new DefaultArtifactClient();
 

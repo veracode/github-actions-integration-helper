@@ -34,6 +34,7 @@ export type Inputs = {
   branch: string;
   event_type: string;
   issue_trigger_flow: string;
+  filtered_results_file: string;
 };
 
 export const parseInputs = (getInput: GetInput): Inputs => {
