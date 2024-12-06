@@ -69,6 +69,10 @@ inputs:
     description: 'Is this action called from the Veracode Workflow App'
     required: false
     default: 'true'
+  line_number_slop:
+    description: 'Line number slop'
+    required: false
+    default: '3'
 runs:
   using: 'node20'
   main: 'dist/index.js'

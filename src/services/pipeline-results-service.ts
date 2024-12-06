@@ -10,8 +10,6 @@ import { updateChecks } from './check-service';
 import { getApplicationByName } from './application-service';
 import { getApplicationFindings } from './findings-service';
 
-const LINE_NUMBER_SLOP = 3; //adjust to allow for line number movement
-
 function getOctokit(inputs: Inputs): Octokit {
   return new Octokit({
     auth: inputs.token,
@@ -36,6 +34,8 @@ function getOwnership(inputs: Inputs): { owner: string; repo: string } {
 
 export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const workflow_app = inputs.workflow_app;
+  const LINE_NUMBER_SLOP = inputs.line_number_slop; //adjust to allow for line number movement
+  core.info(`LINE_NUMBER_SLOP: ${LINE_NUMBER_SLOP}`);
 
   // When the action is preparePolicyResults, need to make sure token,
   // check_run_id and source_repository are provided
