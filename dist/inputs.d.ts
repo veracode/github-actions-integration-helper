@@ -32,6 +32,7 @@ export type Inputs = {
     event_type: string;
     issue_trigger_flow: string;
     workflow_app: boolean;
+    line_number_slop: number;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;
