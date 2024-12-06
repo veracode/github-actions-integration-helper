@@ -12,31 +12,38 @@ import { getApplicationFindings } from './findings-service';
 
 const LINE_NUMBER_SLOP = 3; //adjust to allow for line number movement
 
-export async function preparePipelineResults(inputs: Inputs): Promise<void> {
-  const repo = inputs.source_repository.split('/');
-  const ownership = {
-    owner: repo[0],
-    repo: repo[1],
-  };
+function getOctokit(inputs: Inputs): Octokit {
+  return new Octokit({
+    auth: inputs.token,
+  });
+}
 
-  const checkStatic: Checks.ChecksStatic = {
-    owner: ownership.owner,
-    repo: ownership.repo,
+function getCheckStatic(inputs: Inputs): Checks.ChecksStatic {
+  return {
+    owner: getOwnership(inputs).owner,
+    repo: getOwnership(inputs).repo,
     check_run_id: inputs.check_run_id,
     status: Checks.Status.Completed,
   };
+}
 
-  const octokit = new Octokit({
-    auth: inputs.token,
-  });
+function getOwnership(inputs: Inputs): { owner: string; repo: string } {
+  return {
+    owner: inputs.source_repository.split('/')[0],
+    repo: inputs.source_repository.split('/')[1],
+  };
+}
+
+export async function preparePipelineResults(inputs: Inputs): Promise<void> {
+  const workflow_app = inputs.workflow_app;
 
   // When the action is preparePolicyResults, need to make sure token,
   // check_run_id and source_repository are provided
-  if (!vaildateScanResultsActionInput(inputs)) {
+  if (!vaildateScanResultsActionInput(inputs) && workflow_app) {
     core.setFailed('token, check_run_id and source_repository are required.');
     await updateChecks(
-      octokit,
-      checkStatic,
+      getOctokit(inputs),
+      getCheckStatic(inputs),
       inputs.fail_checks_on_error ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
       [],
       'Token, check_run_id and source_repository are required.',
@@ -54,20 +61,26 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
-    await updateChecks(
-      octokit,
-      checkStatic,
-      inputs.fail_checks_on_error ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
-      [],
-      'Error reading or parsing pipeline scan results.',
-    );
-    return;
+    if (workflow_app) {
+      await updateChecks(
+        getOctokit(inputs),
+        getCheckStatic(inputs),
+        inputs.fail_checks_on_error ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
+        [],
+        'Error reading or parsing pipeline scan results.',
+      );
+      return;
+    }
   }
 
   core.info(`Pipeline findings: ${findingsArray.length}`);
 
-  const filePath = 'filtered_results.json';
+  let filePath = '';
   const artifactName = 'Veracode Pipeline-Scan Results - Mitigated findings';
+  if (workflow_app)
+    filePath = 'filtered_results.json';
+  else
+    filePath = 'filtered_results_mitigated.json';
   const rootDirectory = process.cwd();
   const artifactClient = new DefaultArtifactClient();
 
@@ -82,7 +95,15 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     }
     core.info('No pipeline findings, exiting and update the github check status to success');
     // update inputs.check_run_id status to success
-    await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings');
+    if (workflow_app) {
+      await updateChecks(
+        getOctokit(inputs),
+        getCheckStatic(inputs),
+        Checks.Conclusion.Success,
+        [],
+        'No pipeline findings',
+      );
+    }
     return;
   }
 
@@ -147,18 +168,33 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     core.info(`Error while updating the ${artifactName} artifact ${error}`);
   }
 
+  if (!workflow_app) {
+    if (filteredFindingsArray.length > 0 && inputs.fail_checks_on_policy) {
+      core.setFailed('There are findings violates the security policy.');
+    }
+    return;
+  }
+
   core.info(`Filtered pipeline findings: ${filteredFindingsArray.length}`);
 
   if (filteredFindingsArray.length === 0) {
     core.info('No pipeline findings after filtering, exiting and update the github check status to success');
     // update inputs.check_run_id status to success
-    await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings');
+    if (!workflow_app) {
+      await updateChecks(
+        getOctokit(inputs),
+        getCheckStatic(inputs),
+        Checks.Conclusion.Success,
+        [],
+        'No pipeline findings',
+      );
+    }
     return;
   } else {
     // use octokit to check the language of the source repository. If it is a java project, then
     // use octokit to check if the source repository is using java maven or java gradle
     // if so, filePathPrefix = 'src/main/java/'
-    const repoResponse = await octokit.repos.get(ownership);
+    const repoResponse = await getOctokit(inputs).repos.get(getOwnership(inputs));
     const language = repoResponse.data.language;
     core.info(`Source repository language: ${language}`);
 
@@ -167,13 +203,13 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
       let pomFileExists = false;
       let gradleFileExists = false;
       try {
-        await octokit.repos.getContent({ ...ownership, path: 'pom.xml' });
+        await getOctokit(inputs).repos.getContent({ ...getOwnership(inputs), path: 'pom.xml' });
         pomFileExists = true;
       } catch (error) {
         core.debug(`Error reading or parsing source repository:${error}`);
       }
       try {
-        await octokit.repos.getContent({ ...ownership, path: 'build.gradle' });
+        await getOctokit(inputs).repos.getContent({ ...getOwnership(inputs), path: 'build.gradle' });
         gradleFileExists = true;
       } catch (error) {
         core.debug(`Error reading or parsing source repository:${error}`);
@@ -190,11 +226,11 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
       const annotationBatch = annotations.slice(index * maxNumberOfAnnotations, (index + 1) * maxNumberOfAnnotations);
       if (annotationBatch.length > 0) {
         await updateChecks(
-          octokit,
-          checkStatic,
+          getOctokit(inputs), 
+          getCheckStatic(inputs), 
           inputs.fail_checks_on_policy ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
           annotationBatch,
-          "Here's the summary of the scan result.",
+          'Here\'s the summary of the scan result.',
         );
       }
     }

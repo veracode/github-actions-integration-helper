@@ -34,6 +34,7 @@ export type Inputs = {
   branch: string;
   event_type: string;
   issue_trigger_flow: string;
+  workflow_app: boolean;
 };
 
 export const parseInputs = (getInput: GetInput): Inputs => {
@@ -71,6 +72,8 @@ export const parseInputs = (getInput: GetInput): Inputs => {
   const event_type = getInput('event_type');
   const issue_trigger_flow = getInput('issue_trigger_flow');
 
+  const workflow_app = getInput('workflow_app') === 'true';
+
   if (source_repository && source_repository.split('/').length !== 2) {
     throw new Error('source_repository needs to be in the {owner}/{repo} format');
   }
@@ -78,7 +81,7 @@ export const parseInputs = (getInput: GetInput): Inputs => {
   return { action, token, check_run_id: +check_run_id, vid, vkey, appname, 
     source_repository, fail_checks_on_policy, fail_checks_on_error, sandboxname,
     policyname, path, start_line: +start_line, end_line: +end_line, break_build_invalid_policy,
-    filter_mitigated_flaws, check_run_name, head_sha, branch, event_type, issue_trigger_flow
+    filter_mitigated_flaws, check_run_name, head_sha, branch, event_type, issue_trigger_flow, workflow_app,
    };
 };
 
