@@ -61,10 +61,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
   const artifactClient = new DefaultArtifactClient();
 
   if (findingsArray.length === 0 || pipelineScanFlawFilter === 'all_results' || pipelineScanFlawFilter === 'policy_violations') {
-    core.debug('invoked =================================')
     try {
-      veracodePipelineResult.findings = [];
-      // await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
       await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
       await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
       core.info(`${artifactName} directory uploaded successfully under the artifact.`);
