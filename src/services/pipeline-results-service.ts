@@ -27,6 +27,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
   core.info(`LINE_NUMBER_SLOP: ${LINE_NUMBER_SLOP}`);
 
   const pipelineScanFlawFilter = inputs.pipeline_scan_flaw_filter;
+  core.info(`Pipeline scan flaw filter: ${pipelineScanFlawFilter}`);
   const pipeline_results_file = pipelineScanFlawFilter.includes('policy')
     ? 'filtered_results.json'
     : 'results.json';
@@ -320,7 +321,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
           checkStatic,
           inputs.fail_checks_on_policy ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
           annotationBatch,
-          "Here's the summary of the scan result.",
+          'Here\'s the summary of the scan result.',
         );
       }
     }
