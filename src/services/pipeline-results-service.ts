@@ -32,21 +32,17 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
     ? 'filtered_results.json'
     : 'results.json';
   // Available filter options:
-  //  - all_results: All pipeline scan results
-  //  - policy_violations: Pipeline scan results that violate the security policy
-  //  - unmitigated_results: Pipeline scan results excluding mitigated findings in the platform
-  //  - unmitigated_policy_violations: Pipeline scan results that violate the security policy and are unmitigated
-  //  - new_findings: New results in this commit not seen in previous scans
-  //  - new_policy_violations: New results in this commit that violate the policy
+  //  - all_results: Includes all pipeline scan findings, regardless of whether they violate the security policy.
+  //  - policy_violations: Includes only findings from the pipeline scan that violate the security policy.
+  //  - unmitigated_results: Excludes mitigated findings on the Veracode platform and includes all remaining findings, regardless of policy violations.
+  //  - unmitigated_policy_violations: Includes only unmitigated findings that violate the security policy.
+  //  - new_findings: Includes net new findings introduced in this commit, regardless of policy violations, excluding findings from previous scans.
+  //  - new_policy_violations: Includes net new findings introduced in this commit that violate the security policy, excluding findings from previous scans.
 
   let findingsArray: VeracodePipelineResult.Finding[] = [];
-  // let veracodePipelineResult;
   let veracodePipelineResult: VeracodePipelineResult.ResultsData;
   try {
     const data = await fs.readFile(pipeline_results_file, 'utf-8');
-    // const parsedData: VeracodePipelineResult.ResultsData = JSON.parse(data);
-    // findingsArray = parsedData.findings;
-    // veracodePipelineResult = JSON.parse(data);
     veracodePipelineResult = JSON.parse(data);
     findingsArray = veracodePipelineResult.findings;
   } catch (error) {
@@ -60,7 +56,9 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
   const rootDirectory = process.cwd();
   const artifactClient = new DefaultArtifactClient();
 
-  if (findingsArray.length === 0 || pipelineScanFlawFilter === 'all_results' || pipelineScanFlawFilter === 'policy_violations') {
+  if (findingsArray.length === 0 || 
+      pipelineScanFlawFilter === 'all_results' || 
+      pipelineScanFlawFilter === 'policy_violations') {
     try {
       await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
       await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
@@ -84,16 +82,8 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
 
   // for new_findings or new_policy_violations, need to filter out all existing policy findings
   let policyFindingsToExclude: VeracodePolicyResult.Finding[] = policyFindings;
+
   // for unmitigated_results or unmitigated_policy_violations, need to filter out mitigated findings
-  // if (pipelineScanFlawFilter.includes('mitigated'))
-  //   policyFindingsToExlcude = policyFindings.filter((finding) => {
-  //     return (
-  //       finding.finding_status.status === 'CLOSED' &&
-  //       (finding.finding_status.resolution === 'POTENTIAL_FALSE_POSITIVE' ||
-  //         finding.finding_status.resolution === 'MITIGATED') &&
-  //       finding.finding_status.resolution_status === 'APPROVED'
-  //     );
-  //   });
   if (pipelineScanFlawFilter.includes('mitigated')) {
     policyFindingsToExclude = policyFindings.filter(
       (finding) =>

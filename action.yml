@@ -78,12 +78,12 @@ inputs:
     required: false
     default: 'policy_violations'
     # Available filter options:
-    # - all_results: All pipeline scan results
-    # - policy_violations: Pipeline scan results that violate the security policy
-    # - unmitigated_results: Pipeline scan results excluding mitigated findings in the platform
-    # - unmitigated_policy_violations: Pipeline scan results that violate the security policy and are unmitigated
-    # - new_findings: New results in this commit not seen in previous scans
-    # - new_policy_violations: New results in this commit that violate the policy
+    # - all_results: Includes all pipeline scan findings, regardless of whether they violate the security policy.
+    # - policy_violations: Includes only findings from the pipeline scan that violate the security policy.
+    # - unmitigated_results: Excludes mitigated findings on the Veracode platform and includes all remaining findings, regardless of policy violations.
+    # - unmitigated_policy_violations: Includes only unmitigated findings that violate the security policy.
+    # - new_findings: Includes net new findings introduced in this commit, regardless of policy violations, excluding findings from previous scans.
+    # - new_policy_violations: Includes net new findings introduced in this commit that violate the security policy, excluding findings from previous scans.
 
 runs:
   using: 'node20'
