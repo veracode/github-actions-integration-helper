@@ -60,7 +60,8 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
   const rootDirectory = process.cwd();
   const artifactClient = new DefaultArtifactClient();
 
-  if (findingsArray.length === 0 || pipelineScanFlawFilter in ['all_results', 'policy_violations']) {
+  if (findingsArray.length === 0 || pipelineScanFlawFilter === 'all_results' || pipelineScanFlawFilter === 'policy_violations') {
+    core.debug('invoked =================================')
     try {
       veracodePipelineResult.findings = [];
       // await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
