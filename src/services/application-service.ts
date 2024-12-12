@@ -33,7 +33,7 @@ export async function getApplicationByName(
 
     return applications[0];
   } catch (error) {
-    console.error(error)
+   // console.error(error)
     throw error;
   }
 }
