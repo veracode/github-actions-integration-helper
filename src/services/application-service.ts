@@ -33,7 +33,6 @@ export async function getApplicationByName(
 
     return applications[0];
   } catch (error) {
-    console.error(error);
     throw error;
   }
 }
@@ -235,6 +234,8 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       resourceUri: appConfig.api.veracode.policyUri,
       queryAttribute: 'name',
       queryValue: encodeURIComponent(inputs.policyname),
+      queryAttribute1: 'name_exact',
+      queryValue1: true,
     };
 
     annotations.push({
