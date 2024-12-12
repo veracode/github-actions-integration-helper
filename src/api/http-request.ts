@@ -6,6 +6,8 @@ interface Resource {
   resourceUri: string;
   queryAttribute: string;
   queryValue: string;
+  queryAttribute1?: string;
+  queryValue1?: boolean;
 }
 
 interface ResourceById {
@@ -17,13 +19,18 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
   const resourceUri = resource.resourceUri;
   const queryAttribute = resource.queryAttribute;
   const queryValue = resource.queryValue;
+  const queryAttribute1 = resource.queryAttribute1;
+  const queryValue1 = resource.queryValue1;
   let host = appConfig.hostName.veracode.us;
   if (vid.startsWith('vera01ei-')) {
     host = appConfig.hostName.veracode.eu;
     vid = vid.split('-')[1] || '';  // Extract part after '-'
     vkey = vkey.split('-')[1] || ''; // Extract part after '-'
   }
-  const urlQueryParams = queryAttribute !== '' ? `?${queryAttribute}=${queryValue}` : '';
+  let urlQueryParams = queryAttribute !== '' ? `?${queryAttribute}=${queryValue}` : '';
+  if (queryAttribute1) {
+    urlQueryParams = urlQueryParams + `&${queryAttribute1}=${queryValue1}`;
+  }
   const queryUrl = resourceUri + urlQueryParams;
   const headers = {
     Authorization: calculateAuthorizationHeader({
