@@ -65,6 +65,9 @@ inputs:
   issue_trigger_flow:
     description: 'A flag to identify if the scan was invoked by issue comment or creation.'
     required: false
+  filtered_results_file:
+    description: 'Filtered results file'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'
