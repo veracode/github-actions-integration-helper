@@ -12,7 +12,122 @@ import { getApplicationFindings } from './findings-service';
 
 const LINE_NUMBER_SLOP = 3; //adjust to allow for line number movement
 
+function printResults(
+  numberOfPipelineScanFindings: number,
+  numberOfMitigatedFlaws: number,
+  numberOfRemainingFlaws: number
+): void {
+  core.info(`Pipeline findings: ${numberOfPipelineScanFindings}`);
+  core.info(`Mitigated findings: ${numberOfMitigatedFlaws}`);
+  core.info(`Filtered pipeline findings: ${numberOfRemainingFlaws}`);
+}
+
+async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<void> {
+  const LINE_NUMBER_SLOP = inputs.line_number_slop; //adjust to allow for line number movement
+  core.info(`LINE_NUMBER_SLOP: ${LINE_NUMBER_SLOP}`);
+
+  const pipelineScanFlawFilter = inputs.pipeline_scan_flaw_filter;
+  core.info(`Pipeline scan flaw filter: ${pipelineScanFlawFilter}`);
+  const pipeline_results_file = pipelineScanFlawFilter.includes('policy')
+    ? 'filtered_results.json'
+    : 'results.json';
+  // Available filter options:
+  //  - all_results: Includes all pipeline scan findings, regardless of whether they violate the security policy.
+  //  - policy_violations: Includes only findings from the pipeline scan that violate the security policy.
+  //  - unmitigated_results: Excludes mitigated findings on the Veracode platform and includes all remaining findings, regardless of policy violations.
+  //  - unmitigated_policy_violations: Includes only unmitigated findings that violate the security policy.
+  //  - new_findings: Includes net new findings introduced in this commit, regardless of policy violations, excluding findings from previous scans.
+  //  - new_policy_violations: Includes net new findings introduced in this commit that violate the security policy, excluding findings from previous scans.
+
+  let findingsArray: VeracodePipelineResult.Finding[] = [];
+  let veracodePipelineResult: VeracodePipelineResult.ResultsData;
+  try {
+    const data = await fs.readFile(pipeline_results_file, 'utf-8');
+    veracodePipelineResult = JSON.parse(data);
+    findingsArray = veracodePipelineResult.findings;
+  } catch (error) {
+    core.debug(`Error reading or parsing filtered_results.json:${error}`);
+    core.setFailed('Error reading or parsing pipeline scan results.');
+    return;
+  }
+
+  const filePath = 'pipeline_scan_flaw_filter.json';
+  const artifactName = 'Veracode Pipeline-Scan Results - Filtered findings';
+  const rootDirectory = process.cwd();
+  const artifactClient = new DefaultArtifactClient();
+
+  if (findingsArray.length === 0 || 
+      pipelineScanFlawFilter === 'all_results' || 
+      pipelineScanFlawFilter === 'policy_violations') {
+    try {
+      await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
+      await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
+      core.info(`${artifactName} directory uploaded successfully under the artifact.`);
+    } catch (error) {
+      core.info(`Error while updating the ${artifactName} artifact ${error}`);
+    }
+    printResults(findingsArray.length, 0, findingsArray.length);
+    return;
+  }
+
+  let policyFindings: VeracodePolicyResult.Finding[] = [];
+  try {
+    const application = await getApplicationByName(inputs.appname, inputs.vid, inputs.vkey);
+    const applicationGuid = application.guid;
+    policyFindings = await getApplicationFindings(applicationGuid, inputs.vid, inputs.vkey);
+  } catch (error) {
+    core.info(`No application found with name ${inputs.appname}`);
+    policyFindings = [];
+  }
+
+  // for new_findings or new_policy_violations, need to filter out all existing policy findings
+  let policyFindingsToExclude: VeracodePolicyResult.Finding[] = policyFindings;
+
+  // for unmitigated_results or unmitigated_policy_violations, need to filter out mitigated findings
+  if (pipelineScanFlawFilter.includes('mitigated')) {
+    policyFindingsToExclude = policyFindings.filter(
+      (finding) =>
+        finding.finding_status.status === 'CLOSED' &&
+        (finding.finding_status.resolution === 'POTENTIAL_FALSE_ POSITIVE' ||
+          finding.finding_status.resolution === 'MITIGATED') &&
+        finding.finding_status.resolution_status === 'APPROVED'
+    );
+  }
+
+  // Remove item in findingsArray if there are item in policyFindingsToExlcude if the file_path and
+  // cwe_id and line_number are the same
+  const filteredFindingsArray = findingsArray.filter((finding) => {
+    return !policyFindingsToExclude.some((mitigatedFinding) => {
+      if (mitigatedFinding.finding_details.file_path.charAt(0) === '/') {
+        mitigatedFinding.finding_details.file_path = mitigatedFinding.finding_details.file_path.substring(1);
+      }
+      return (
+        finding.files.source_file.file === mitigatedFinding.finding_details.file_path &&
+        +finding.cwe_id === mitigatedFinding.finding_details.cwe.id &&
+        Math.abs(finding.files.source_file.line - mitigatedFinding.finding_details.file_line_number) <= LINE_NUMBER_SLOP
+      );
+    });
+  });
+
+  try {
+    veracodePipelineResult.findings = filteredFindingsArray;
+    await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
+    await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
+    core.info(`${artifactName} directory uploaded successfully under the artifact.`);
+  } catch (error) {
+    core.info(`Error while updating the ${artifactName} artifact ${error}`);
+  }
+
+  printResults(findingsArray.length, policyFindingsToExclude.length, filteredFindingsArray.length);
+}
+
 export async function preparePipelineResults(inputs: Inputs): Promise<void> {
+  const workflow_app = inputs.workflow_app;
+  if (!workflow_app) {
+    preparePipelineResultsNonWorkflowApp(inputs);
+    return;
+  }
+
   const repo = inputs.source_repository.split('/');
   const ownership = {
     owner: repo[0],
@@ -194,7 +309,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
           checkStatic,
           inputs.fail_checks_on_policy ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
           annotationBatch,
-          "Here's the summary of the scan result.",
+          'Here\'s the summary of the scan result.',
         );
       }
     }

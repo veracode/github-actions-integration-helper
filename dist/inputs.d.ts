@@ -31,6 +31,9 @@ export type Inputs = {
     branch: string;
     event_type: string;
     issue_trigger_flow: string;
+    workflow_app: boolean;
+    line_number_slop: number;
+    pipeline_scan_flaw_filter: string;
     filtered_results_file: string;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
