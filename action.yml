@@ -84,7 +84,9 @@ inputs:
     # - unmitigated_policy_violations: Includes only unmitigated findings that violate the security policy.
     # - new_findings: Includes net new findings introduced in this commit, regardless of policy violations, excluding findings from previous scans.
     # - new_policy_violations: Includes net new findings introduced in this commit that violate the security policy, excluding findings from previous scans.
-
+  filtered_results_file:
+    description: 'Filtered results file'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'

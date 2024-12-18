@@ -34,6 +34,7 @@ export type Inputs = {
     workflow_app: boolean;
     line_number_slop: number;
     pipeline_scan_flaw_filter: string;
+    filtered_results_file: string;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;

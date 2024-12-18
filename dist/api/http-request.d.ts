@@ -2,6 +2,8 @@ interface Resource {
     resourceUri: string;
     queryAttribute: string;
     queryValue: string;
+    queryAttribute1?: string;
+    queryValue1?: boolean;
 }
 interface ResourceById {
     resourceUri: string;
