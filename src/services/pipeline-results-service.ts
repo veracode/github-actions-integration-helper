@@ -82,6 +82,10 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
 
   // for new_findings or new_policy_violations, need to filter out all existing policy findings
   let policyFindingsToExclude: VeracodePolicyResult.Finding[] = policyFindings;
+  core.debug(`policyFindingsToExclude findings: ${policyFindingsToExclude.length}`);
+  policyFindingsToExclude.forEach((finding) => {
+    core.debug(`policyFindingsToExclude finding: ${finding}`);
+  });
 
   // for unmitigated_results or unmitigated_policy_violations, need to filter out mitigated findings
   if (pipelineScanFlawFilter.includes('mitigated')) {
@@ -93,6 +97,11 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
         finding.finding_status.resolution_status === 'APPROVED'
     );
   }
+
+  core.debug(`policyFindingsToExclude findings: ${policyFindingsToExclude.length}`);
+  policyFindingsToExclude.forEach((finding) => {
+    core.debug(`policyFindingsToExclude finding: ${finding}`);
+  });
 
   // Remove item in findingsArray if there are item in policyFindingsToExlcude if the file_path and
   // cwe_id and line_number are the same
@@ -107,6 +116,11 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
         Math.abs(finding.files.source_file.line - mitigatedFinding.finding_details.file_line_number) <= LINE_NUMBER_SLOP
       );
     });
+  });
+
+  core.debug(`filteredFindingsArray findings: ${filteredFindingsArray.length}`);
+  filteredFindingsArray.forEach((finding) => {
+    core.debug(`filteredFindingsArray finding: ${finding}`);
   });
 
   try {
