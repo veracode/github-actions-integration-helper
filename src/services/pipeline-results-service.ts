@@ -82,9 +82,9 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
 
   // for new_findings or new_policy_violations, need to filter out all existing policy findings
   let policyFindingsToExclude: VeracodePolicyResult.Finding[] = policyFindings;
-  core.debug(`policyFindingsToExclude findings: ${policyFindingsToExclude.length}`);
+  core.debug(`policyFindings findings: ${policyFindingsToExclude.length}`);
   policyFindingsToExclude.forEach((finding) => {
-    core.debug(`policyFindingsToExclude finding: ${JSON.stringify(finding, null, 2)}`);
+    core.debug(`policyFindings finding: ${JSON.stringify(finding, null, 2)}`);
   });
 
   // for unmitigated_results or unmitigated_policy_violations, need to filter out mitigated findings
