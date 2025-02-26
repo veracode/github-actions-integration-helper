@@ -84,7 +84,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
   let policyFindingsToExclude: VeracodePolicyResult.Finding[] = policyFindings;
   core.debug(`policyFindingsToExclude findings: ${policyFindingsToExclude.length}`);
   policyFindingsToExclude.forEach((finding) => {
-    core.debug(`policyFindingsToExclude finding: ${finding}`);
+    core.debug(`policyFindingsToExclude finding: ${JSON.stringify(finding, null, 2)}`);
   });
 
   // for unmitigated_results or unmitigated_policy_violations, need to filter out mitigated findings
@@ -100,7 +100,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
 
   core.debug(`policyFindingsToExclude findings: ${policyFindingsToExclude.length}`);
   policyFindingsToExclude.forEach((finding) => {
-    core.debug(`policyFindingsToExclude finding: ${finding}`);
+    core.debug(`policyFindingsToExclude finding: ${JSON.stringify(finding, null, 2)}`);
   });
 
   // Remove item in findingsArray if there are item in policyFindingsToExlcude if the file_path and
@@ -120,7 +120,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
 
   core.debug(`filteredFindingsArray findings: ${filteredFindingsArray.length}`);
   filteredFindingsArray.forEach((finding) => {
-    core.debug(`filteredFindingsArray finding: ${finding}`);
+    core.debug(`filteredFindingsArray finding: ${JSON.stringify(finding, null, 2)}`);
   });
 
   try {
