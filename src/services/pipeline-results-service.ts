@@ -102,7 +102,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
     policyFindingsToExclude = policyFindings.filter(
       (finding) =>
         finding.finding_status.status === 'CLOSED' &&
-        (finding.finding_status.resolution === 'POTENTIAL_FALSE_ POSITIVE' ||
+        (finding.finding_status.resolution === 'POTENTIAL_FALSE_POSITIVE' ||
           finding.finding_status.resolution === 'MITIGATED') &&
         finding.finding_status.resolution_status === 'APPROVED'
     );
