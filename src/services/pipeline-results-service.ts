@@ -85,6 +85,16 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
   core.debug(`policyFindings findings: ${policyFindingsToExclude.length}`);
   policyFindingsToExclude.forEach((finding) => {
     core.debug(`policyFindings finding: ${JSON.stringify(finding, null, 2)}`);
+    core.debug(`policyFindings finding: ${finding.finding_details.file_path}`);
+    core.debug(`policyFindings finding: ${finding.finding_details.file_line_number}`);
+    core.debug(`policyFindings finding: ${finding.finding_details.cwe.id}`);
+    core.debug(`policyFindings finding: ${finding.finding_details.cwe.name}`);
+    core.debug(`policyFindings finding: ${finding.finding_status.status}`);
+    core.debug(`policyFindings finding: ${finding.finding_status.resolution}`);
+    core.debug(`policyFindings finding: ${finding.finding_status.resolution_status}`);
+    core.debug(`policyFindings finding: ${finding.violates_policy}`);
+    core.debug(`policyFindings finding: ${finding.description}`);
+    core.debug(`policyFindings finding: ${finding.issue_id}`);
   });
 
   // for unmitigated_results or unmitigated_policy_violations, need to filter out mitigated findings
@@ -101,6 +111,16 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
   core.debug(`policyFindingsToExclude findings: ${policyFindingsToExclude.length}`);
   policyFindingsToExclude.forEach((finding) => {
     core.debug(`policyFindingsToExclude finding: ${JSON.stringify(finding, null, 2)}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_details.file_path}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_details.file_line_number}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_details.cwe.id}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_details.cwe.name}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_status.status}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_status.resolution}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_status.resolution_status}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.violates_policy}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.description}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.issue_id}`);
   });
 
   // Remove item in findingsArray if there are item in policyFindingsToExlcude if the file_path and
