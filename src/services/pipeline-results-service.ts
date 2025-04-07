@@ -82,17 +82,46 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
 
   // for new_findings or new_policy_violations, need to filter out all existing policy findings
   let policyFindingsToExclude: VeracodePolicyResult.Finding[] = policyFindings;
+  core.debug(`policyFindings findings: ${policyFindingsToExclude.length}`);
+  policyFindingsToExclude.forEach((finding) => {
+    core.debug(`policyFindings finding: ${JSON.stringify(finding, null, 2)}`);
+    core.debug(`policyFindings finding: ${finding.finding_details.file_path}`);
+    core.debug(`policyFindings finding: ${finding.finding_details.file_line_number}`);
+    core.debug(`policyFindings finding: ${finding.finding_details.cwe.id}`);
+    core.debug(`policyFindings finding: ${finding.finding_details.cwe.name}`);
+    core.debug(`policyFindings finding: ${finding.finding_status.status}`);
+    core.debug(`policyFindings finding: ${finding.finding_status.resolution}`);
+    core.debug(`policyFindings finding: ${finding.finding_status.resolution_status}`);
+    core.debug(`policyFindings finding: ${finding.violates_policy}`);
+    core.debug(`policyFindings finding: ${finding.description}`);
+    core.debug(`policyFindings finding: ${finding.issue_id}`);
+  });
 
   // for unmitigated_results or unmitigated_policy_violations, need to filter out mitigated findings
   if (pipelineScanFlawFilter.includes('mitigated')) {
     policyFindingsToExclude = policyFindings.filter(
       (finding) =>
         finding.finding_status.status === 'CLOSED' &&
-        (finding.finding_status.resolution === 'POTENTIAL_FALSE_ POSITIVE' ||
+        (finding.finding_status.resolution === 'POTENTIAL_FALSE_POSITIVE' ||
           finding.finding_status.resolution === 'MITIGATED') &&
         finding.finding_status.resolution_status === 'APPROVED'
     );
   }
+
+  core.debug(`policyFindingsToExclude findings: ${policyFindingsToExclude.length}`);
+  policyFindingsToExclude.forEach((finding) => {
+    core.debug(`policyFindingsToExclude finding: ${JSON.stringify(finding, null, 2)}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_details.file_path}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_details.file_line_number}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_details.cwe.id}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_details.cwe.name}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_status.status}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_status.resolution}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.finding_status.resolution_status}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.violates_policy}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.description}`);
+    core.debug(`policyFindingsToExclude finding: ${finding.issue_id}`);
+  });
 
   // Remove item in findingsArray if there are item in policyFindingsToExlcude if the file_path and
   // cwe_id and line_number are the same
@@ -107,6 +136,11 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
         Math.abs(finding.files.source_file.line - mitigatedFinding.finding_details.file_line_number) <= LINE_NUMBER_SLOP
       );
     });
+  });
+
+  core.debug(`filteredFindingsArray findings: ${filteredFindingsArray.length}`);
+  filteredFindingsArray.forEach((finding) => {
+    core.debug(`filteredFindingsArray finding: ${JSON.stringify(finding, null, 2)}`);
   });
 
   try {
