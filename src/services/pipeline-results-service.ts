@@ -173,6 +173,8 @@ function nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering(
     filteredPipelineFinding: VeracodePipelineResult.Finding[],
     filteredFindingsArray: VeracodePipelineResult.Finding[],
 ): boolean {
+  core.info('===============================================================');
+  core.info('method invoked: nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering');
   // check if any of the filteredPipelineFinding exists in the filteredFindingsArray, by comparing issue_id
   for(const finding of filteredPipelineFinding) {
     core.debug(`filteredPipelineFinding finding: ${JSON.stringify(finding, null, 2)}`);
