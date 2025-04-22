@@ -187,6 +187,8 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const workflow_app = inputs.workflow_app;
   if (!workflow_app) {
     const hasPolicyViolatedFindings = await preparePipelineResultsNonWorkflowApp(inputs) !== 0;
+    core.info(`Has policy violated findings: ${hasPolicyViolatedFindings}`);
+    core.info(`Fail checks on policy: ${inputs.fail_checks_on_policy}`);
     if (hasPolicyViolatedFindings && inputs.fail_checks_on_policy) {
       core.setFailed('Pipeline scan results contain policy violated findings.');
     }
