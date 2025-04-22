@@ -62,6 +62,9 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<num
     return -1;
   }
 
+  core.info('############################################')
+  core.info(`filteredPipelineFinding length: ${filteredPipelineFinding.length}`);
+
   const filePath = 'pipeline_scan_flaw_filter.json';
   const artifactName = 'Veracode Pipeline-Scan Results - Filtered findings';
   const rootDirectory = process.cwd();
