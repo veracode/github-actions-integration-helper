@@ -178,6 +178,9 @@ function nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering(
     core.debug(`filteredPipelineFinding finding: ${JSON.stringify(finding, null, 2)}`);
     for(const finding2 of filteredFindingsArray) {
       core.debug(`filteredFindingsArray finding: ${JSON.stringify(finding2, null, 2)}`);
+      core.info(`finding.issue_id: ${finding.issue_id}, finding2.issue_id: ${finding2.issue_id}`);
+      core.info(`finding.files.source_file.file: ${finding.files.source_file.file}, finding2.files.source_file.file: ${finding2.files.source_file.file}`);
+      core.info(`finding.files.source_file.line: ${finding.files.source_file.line}, finding2.files.source_file.line: ${finding2.files.source_file.line}`);
       if (
           finding.issue_id === finding2.issue_id &&
           finding.files.source_file.file === finding2.files.source_file.file &&
