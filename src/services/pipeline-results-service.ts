@@ -166,42 +166,42 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<num
   core.info('==============================================================');
   core.info(`Filtered pipeline findings: ${filteredFindingsArray.length}`);
   printResults(findingsArray.length, policyFindingsToExclude.length, filteredFindingsArray.length);
-  return nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering(filteredPipelineFinding, filteredFindingsArray) ? 1 : 0;
+  return await nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering(filteredPipelineFinding, filteredFindingsArray) ? 1 : 0;
 }
 
-function nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering(
+async function nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering(
     filteredPipelineFinding: VeracodePipelineResult.Finding[],
     filteredFindingsArray: VeracodePipelineResult.Finding[],
-): boolean {
+): Promise<boolean> {
   core.info('===============================================================');
   core.info('method invoked: nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering');
-  // check if any of the filteredPipelineFinding exists in the filteredFindingsArray, by comparing issue_id
-  for(const finding of filteredPipelineFinding) {
-    core.debug(`filteredPipelineFinding finding: ${JSON.stringify(finding, null, 2)}`);
-    for(const finding2 of filteredFindingsArray) {
-      core.debug(`filteredFindingsArray finding: ${JSON.stringify(finding2, null, 2)}`);
-      core.info(`finding.issue_id: ${finding.issue_id}, finding2.issue_id: ${finding2.issue_id}`);
-      core.info(`finding.files.source_file.file: ${finding.files.source_file.file}, finding2.files.source_file.file: ${finding2.files.source_file.file}`);
-      core.info(`finding.files.source_file.line: ${finding.files.source_file.line}, finding2.files.source_file.line: ${finding2.files.source_file.line}`);
-      if (
-          finding.issue_id === finding2.issue_id &&
-          finding.files.source_file.file === finding2.files.source_file.file &&
-          finding.files.source_file.line === finding2.files.source_file.line
-      ) {
-        return true;
-      }
-    }
-  }
-  return false;
-  // return filteredPipelineFinding.some((finding) => {
-  //   return filteredFindingsArray.some((finding2) => {
-  //     return (
+  // // check if any of the filteredPipelineFinding exists in the filteredFindingsArray, by comparing issue_id
+  // for(const finding of filteredPipelineFinding) {
+  //   core.debug(`filteredPipelineFinding finding: ${JSON.stringify(finding, null, 2)}`);
+  //   for(const finding2 of filteredFindingsArray) {
+  //     core.debug(`filteredFindingsArray finding: ${JSON.stringify(finding2, null, 2)}`);
+  //     core.info(`finding.issue_id: ${finding.issue_id}, finding2.issue_id: ${finding2.issue_id}`);
+  //     core.info(`finding.files.source_file.file: ${finding.files.source_file.file}, finding2.files.source_file.file: ${finding2.files.source_file.file}`);
+  //     core.info(`finding.files.source_file.line: ${finding.files.source_file.line}, finding2.files.source_file.line: ${finding2.files.source_file.line}`);
+  //     if (
   //         finding.issue_id === finding2.issue_id &&
   //         finding.files.source_file.file === finding2.files.source_file.file &&
   //         finding.files.source_file.line === finding2.files.source_file.line
-  //     );
-  //   });
-  // });
+  //     ) {
+  //       return true;
+  //     }
+  //   }
+  // }
+  // return false;
+  return filteredPipelineFinding.some((finding) => {
+    return filteredFindingsArray.some((finding2) => {
+      return (
+          finding.issue_id === finding2.issue_id &&
+          finding.files.source_file.file === finding2.files.source_file.file &&
+          finding.files.source_file.line === finding2.files.source_file.line
+      );
+    });
+  });
 }
 
 export async function preparePipelineResults(inputs: Inputs): Promise<void> {
