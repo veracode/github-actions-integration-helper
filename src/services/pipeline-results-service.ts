@@ -163,6 +163,8 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<num
     core.info(`Error while updating the ${artifactName} artifact ${error}`);
   }
 
+  core.info('==============================================================');
+  core.info(`Filtered pipeline findings: ${filteredFindingsArray.length}`);
   printResults(findingsArray.length, policyFindingsToExclude.length, filteredFindingsArray.length);
   return nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering(filteredPipelineFinding, filteredFindingsArray) ? 1 : 0;
 }
@@ -172,15 +174,29 @@ function nonWorkflowAppHasPolicyViolatedFindingsAfterFiltering(
     filteredFindingsArray: VeracodePipelineResult.Finding[],
 ): boolean {
   // check if any of the filteredPipelineFinding exists in the filteredFindingsArray, by comparing issue_id
-  return filteredPipelineFinding.some((finding) => {
-    return filteredFindingsArray.some((finding2) => {
-      return (
+  for(const finding of filteredPipelineFinding) {
+    core.debug(`filteredPipelineFinding finding: ${JSON.stringify(finding, null, 2)}`);
+    for(const finding2 of filteredFindingsArray) {
+      core.debug(`filteredFindingsArray finding: ${JSON.stringify(finding2, null, 2)}`);
+      if (
           finding.issue_id === finding2.issue_id &&
           finding.files.source_file.file === finding2.files.source_file.file &&
           finding.files.source_file.line === finding2.files.source_file.line
-      );
-    });
-  });
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
+  // return filteredPipelineFinding.some((finding) => {
+  //   return filteredFindingsArray.some((finding2) => {
+  //     return (
+  //         finding.issue_id === finding2.issue_id &&
+  //         finding.files.source_file.file === finding2.files.source_file.file &&
+  //         finding.files.source_file.line === finding2.files.source_file.line
+  //     );
+  //   });
+  // });
 }
 
 export async function preparePipelineResults(inputs: Inputs): Promise<void> {
