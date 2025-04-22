@@ -166,6 +166,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<num
   core.info('==============================================================');
   printResults(findingsArray.length, policyFindingsToExclude.length, filteredFindingsArray.length);
   for (const finding of filteredFindingsArray) {
+    core.info(`finding.issue_id: ${finding.issue_id}`);
     for (const finding2 of filteredPipelineFinding) {
       core.info(`finding.issue_id: ${finding.issue_id}`);
       core.info(`finding2.issue_id: ${finding2.issue_id}`);
