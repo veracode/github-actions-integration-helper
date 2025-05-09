@@ -1,14 +1,14 @@
 import * as core from '@actions/core';
-import { Octokit } from '@octokit/rest';
-import { DefaultArtifactClient } from '@actions/artifact';
+import {Octokit} from '@octokit/rest';
+import {DefaultArtifactClient} from '@actions/artifact';
 import * as fs from 'fs/promises';
 import * as Checks from '../namespaces/Checks';
 import * as VeracodePipelineResult from '../namespaces/VeracodePipelineResult';
 import * as VeracodePolicyResult from '../namespaces/VeracodePolicyResult';
-import { Inputs, vaildateScanResultsActionInput } from '../inputs';
-import { updateChecks } from './check-service';
-import { getApplicationByName } from './application-service';
-import { getApplicationFindings } from './findings-service';
+import {Inputs, vaildateScanResultsActionInput} from '../inputs';
+import {updateChecks} from './check-service';
+import {getApplicationByName} from './application-service';
+import {getApplicationFindings} from './findings-service';
 
 const LINE_NUMBER_SLOP = 3; //adjust to allow for line number movement
 
@@ -22,15 +22,16 @@ function printResults(
   core.info(`Filtered pipeline findings: ${numberOfRemainingFlaws}`);
 }
 
-async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<void> {
+async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<number> {
   const LINE_NUMBER_SLOP = inputs.line_number_slop; //adjust to allow for line number movement
   core.info(`LINE_NUMBER_SLOP: ${LINE_NUMBER_SLOP}`);
 
   const pipelineScanFlawFilter = inputs.pipeline_scan_flaw_filter;
   core.info(`Pipeline scan flaw filter: ${pipelineScanFlawFilter}`);
   const pipeline_results_file = pipelineScanFlawFilter.includes('policy')
-    ? 'filtered_results.json'
-    : 'results.json';
+      ? 'filtered_results.json'
+      : 'results.json';
+  const filtered_pipeline_results_file = 'filtered_results.json';
   // Available filter options:
   //  - all_results: Includes all pipeline scan findings, regardless of whether they violate the security policy.
   //  - policy_violations: Includes only findings from the pipeline scan that violate the security policy.
@@ -41,23 +42,36 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
 
   let findingsArray: VeracodePipelineResult.Finding[] = [];
   let veracodePipelineResult: VeracodePipelineResult.ResultsData;
+  let filteredPipelineFinding: VeracodePipelineResult.Finding[] = [];
+  let filteredVeracodePipelineResult: VeracodePipelineResult.ResultsData;
+
   try {
     const data = await fs.readFile(pipeline_results_file, 'utf-8');
     veracodePipelineResult = JSON.parse(data);
     findingsArray = veracodePipelineResult.findings;
+    if (pipelineScanFlawFilter.includes('policy'))
+      filteredPipelineFinding = findingsArray;
+    else {
+      const filteredData = await fs.readFile(filtered_pipeline_results_file, 'utf-8');
+      filteredVeracodePipelineResult = JSON.parse(filteredData);
+      filteredPipelineFinding = filteredVeracodePipelineResult.findings;
+    }
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
-    return;
+    return -1;
   }
+
+  core.info('############################################')
+  core.info(`filteredPipelineFinding length: ${filteredPipelineFinding.length}`);
 
   const filePath = 'pipeline_scan_flaw_filter.json';
   const artifactName = 'Veracode Pipeline-Scan Results - Filtered findings';
   const rootDirectory = process.cwd();
   const artifactClient = new DefaultArtifactClient();
 
-  if (findingsArray.length === 0 || 
-      pipelineScanFlawFilter === 'all_results' || 
+  if (findingsArray.length === 0 ||
+      pipelineScanFlawFilter === 'all_results' ||
       pipelineScanFlawFilter === 'policy_violations') {
     try {
       await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
@@ -67,7 +81,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
       core.info(`Error while updating the ${artifactName} artifact ${error}`);
     }
     printResults(findingsArray.length, 0, findingsArray.length);
-    return;
+    return filteredPipelineFinding.length === 0 ? 0 : filteredPipelineFinding.length;
   }
 
   let policyFindings: VeracodePolicyResult.Finding[] = [];
@@ -100,11 +114,11 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
   // for unmitigated_results or unmitigated_policy_violations, need to filter out mitigated findings
   if (pipelineScanFlawFilter.includes('mitigated')) {
     policyFindingsToExclude = policyFindings.filter(
-      (finding) =>
-        finding.finding_status.status === 'CLOSED' &&
-        (finding.finding_status.resolution === 'POTENTIAL_FALSE_POSITIVE' ||
-          finding.finding_status.resolution === 'MITIGATED') &&
-        finding.finding_status.resolution_status === 'APPROVED'
+        (finding) =>
+            finding.finding_status.status === 'CLOSED' &&
+            (finding.finding_status.resolution === 'POTENTIAL_FALSE_POSITIVE' ||
+                finding.finding_status.resolution === 'MITIGATED') &&
+            finding.finding_status.resolution_status === 'APPROVED'
     );
   }
 
@@ -131,9 +145,9 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
         mitigatedFinding.finding_details.file_path = mitigatedFinding.finding_details.file_path.substring(1);
       }
       return (
-        finding.files.source_file.file === mitigatedFinding.finding_details.file_path &&
-        +finding.cwe_id === mitigatedFinding.finding_details.cwe.id &&
-        Math.abs(finding.files.source_file.line - mitigatedFinding.finding_details.file_line_number) <= LINE_NUMBER_SLOP
+          finding.files.source_file.file === mitigatedFinding.finding_details.file_path &&
+          +finding.cwe_id === mitigatedFinding.finding_details.cwe.id &&
+          Math.abs(finding.files.source_file.line - mitigatedFinding.finding_details.file_line_number) <= LINE_NUMBER_SLOP
       );
     });
   });
@@ -152,13 +166,43 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<voi
     core.info(`Error while updating the ${artifactName} artifact ${error}`);
   }
 
+  core.info('==============================================================');
   printResults(findingsArray.length, policyFindingsToExclude.length, filteredFindingsArray.length);
+  for (const finding of filteredPipelineFinding) {
+    core.info(`finding.issue_id: ${finding.issue_id}`);
+    core.info(`finding.files.source_file.file: ${finding.files.source_file.file}`);
+    core.info(`finding.files.source_file.line: ${finding.files.source_file.line}`);
+  }
+  for (const finding of filteredFindingsArray) {
+    core.info(`finding.issue_id: ${finding.issue_id}`);
+    for (const finding2 of filteredPipelineFinding) {
+      core.info(`finding.issue_id: ${finding.issue_id}`);
+      core.info(`finding2.issue_id: ${finding2.issue_id}`);
+      core.info(`finding.files.source_file.file: ${finding.files.source_file.file}`);
+      core.info(`finding2.files.source_file.file: ${finding2.files.source_file.file}`);
+      core.info(`finding.files.source_file.line: ${finding.files.source_file.line}`);
+      core.info(`finding2.files.source_file.line: ${finding2.files.source_file.line}`);
+      if (
+          finding.issue_id === finding2.issue_id &&
+          finding.files.source_file.file === finding2.files.source_file.file &&
+          finding.files.source_file.line === finding2.files.source_file.line
+      ) {
+        return 1;
+      }
+    }
+  }
+  return 0;
 }
 
 export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const workflow_app = inputs.workflow_app;
   if (!workflow_app) {
-    preparePipelineResultsNonWorkflowApp(inputs);
+    const hasPolicyViolatedFindings = await preparePipelineResultsNonWorkflowApp(inputs) !== 0;
+    core.info(`Has policy violated findings: ${hasPolicyViolatedFindings}`);
+    core.info(`Fail checks on policy: ${inputs.fail_checks_on_policy}`);
+    if (hasPolicyViolatedFindings && inputs.fail_checks_on_policy) {
+      core.setFailed('Pipeline scan results contain policy violated findings.');
+    }
     return;
   }
 
