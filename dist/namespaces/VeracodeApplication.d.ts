@@ -44,4 +44,10 @@ export interface policyResultsData {
         total_elements: number;
     };
 }
+export interface OrganizationData {
+    organization: {
+        org_id: string;
+        org_name: string;
+    };
+}
 export {};

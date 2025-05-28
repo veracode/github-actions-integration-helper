@@ -1,5 +1,6 @@
 export interface Finding {
     issue_id: number;
+    build_id: number;
     description: string;
     violates_policy: boolean;
     finding_status: {
