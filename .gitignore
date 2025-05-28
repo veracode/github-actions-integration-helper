@@ -4,3 +4,5 @@ docs
 package-lock.json
 tests
 .idea
+.DS_Store
+Added_VRM_changes_for_the_policy_result_service_workflow_.patch

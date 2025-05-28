@@ -5,6 +5,9 @@ import { Inputs, vaildateScanResultsActionInput } from '../inputs';
 import * as VeracodePolicyResult from '../namespaces/VeracodePolicyResult';
 import * as Checks from '../namespaces/Checks';
 import { updateChecks } from './check-service';
+import appConfig from '../app-config';
+import * as VeracodeApplication from '../namespaces/VeracodeApplication';
+import * as http from '../api/http-request';
 
 export async function preparePolicyResults(inputs: Inputs): Promise<void> {
   const octokit = new Octokit({
@@ -47,6 +50,7 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
     const parsedData: VeracodePolicyResult.ResultsData = JSON.parse(data);
     findingsArray = parsedData._embedded.findings;
     resultsUrl = await fs.readFile('results_url.txt', 'utf-8');
+    await postScanReport(inputs, findingsArray);
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
@@ -151,4 +155,47 @@ function getAnnotations(policyFindings: VeracodePolicyResult.Finding[], javaMave
   });
 
   return annotations;
+}
+
+async function postScanReport(inputs: Inputs, policyFindings: VeracodePolicyResult.Finding[]): Promise<void> {
+  try {
+    const getSelfUserDetailsResource = {
+      resourceUri: appConfig.api.veracode.selfUserUri,
+      queryAttribute: '',
+      queryValue: '',
+    };
+    const applicationResponse: VeracodeApplication.OrganizationData =
+        await http.getResourceByAttribute<VeracodeApplication.OrganizationData>(
+            inputs.vid,
+            inputs.vkey,
+            getSelfUserDetailsResource,
+        );
+
+    const commit_sha = inputs.head_sha;
+    const org_id = applicationResponse.organization.org_id;
+    let scan_id;
+    const source_repository = inputs.source_repository;
+    const repository_Url = inputs.gitRepositoryUrl;
+
+    for (let i = 0; i < policyFindings.length; i++) {
+      const element = policyFindings[i];
+      if (typeof element.build_id !== 'undefined') {
+        scan_id = '' + element.build_id;
+        break;
+      }
+    }
+    if (typeof scan_id !== 'undefined') {
+      const scanReport = JSON.stringify({
+        scm: 'GITHUB',
+        commitSha: commit_sha,
+        organizationId: org_id,
+        scanId: scan_id,
+        repositoryName: source_repository,
+        repositoryUrl: repository_Url,
+      });
+      await http.postResourceByAttribute(inputs.vid, inputs.vkey, scanReport);
+    }
+  } catch (error) {
+    core.info(`Error posting scan report: ${error}`);
+  }
 }
