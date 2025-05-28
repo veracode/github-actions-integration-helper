@@ -6,3 +6,4 @@ tests
 .idea
 .DS_Store
 Added_VRM_changes_for_the_policy_result_service_workflow_.patch
+Excluding_EU_region_api_calls.patch

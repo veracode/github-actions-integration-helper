@@ -157,8 +157,11 @@ function getAnnotations(policyFindings: VeracodePolicyResult.Finding[], javaMave
   return annotations;
 }
 
-async function postScanReport(inputs: Inputs, policyFindings: VeracodePolicyResult.Finding[]): Promise<void> {
+export async function postScanReport(inputs: Inputs, policyFindings: VeracodePolicyResult.Finding[]): Promise<void> {
   try {
+    if (inputs.vid.startsWith('vera01ei-')) {
+      return;
+    }
     const getSelfUserDetailsResource = {
       resourceUri: appConfig.api.veracode.selfUserUri,
       queryAttribute: '',
