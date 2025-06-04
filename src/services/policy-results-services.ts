@@ -199,6 +199,6 @@ export async function postScanReport(inputs: Inputs, policyFindings: VeracodePol
       await http.postResourceByAttribute(inputs.vid, inputs.vkey, scanReport);
     }
   } catch (error) {
-    core.info(`Error posting scan report: ${error}`);
+    core.debug(`Error posting scan report: ${error}`);
   }
 }
