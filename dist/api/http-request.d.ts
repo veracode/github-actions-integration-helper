@@ -11,4 +11,5 @@ interface ResourceById {
 }
 export declare function getResourceByAttribute<T>(vid: string, vkey: string, resource: Resource): Promise<T>;
 export declare function deleteResourceById(vid: string, vkey: string, resource: ResourceById): Promise<void>;
+export declare function postResourceByAttribute<T>(vid: string, vkey: string, scanReport: string): Promise<T>;
 export {};

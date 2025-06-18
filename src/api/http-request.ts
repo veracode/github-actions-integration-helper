@@ -78,3 +78,36 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
     throw new Error(`Failed to delete resource: ${error}`);
   }
 }
+
+export async function postResourceByAttribute<T>(vid: string, vkey: string, scanReport: string): Promise<T> {
+  const resourceUri = appConfig.api.veracode.relayServiceUri;
+  const host = appConfig.hostName.veracode.us;
+  if (vid.startsWith('vera01')) {
+    vid = vid.split('-')[1] || '';
+    vkey = vkey.split('-')[1] || '';
+  }
+  const headers = {
+    Authorization: calculateAuthorizationHeader({
+      id: vid,
+      key: vkey,
+      host: host,
+      url: resourceUri,
+      method: 'POST',
+    }),
+    'Content-Type': 'application/json',
+  };
+  try {
+    const appUrl = `https://${host}${resourceUri}`;
+    const response = await fetch(appUrl, {
+      method: 'POST',
+      headers: headers,
+      body: scanReport,
+    });
+
+    const data = await response.json();
+    core.info(`Scan report response: ${JSON.stringify(data)}`);
+    return data as T;
+  } catch (error) {
+    throw new Error(`Failed to post resource: ${error}`);
+  }
+}

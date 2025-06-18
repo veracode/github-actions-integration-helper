@@ -87,6 +87,9 @@ inputs:
   filtered_results_file:
     description: 'Filtered results file'
     required: false
+  gitRepositoryUrl:
+    description: 'Git Repository Url'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'
