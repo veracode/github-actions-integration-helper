@@ -90,6 +90,9 @@ inputs:
   gitRepositoryUrl:
     description: 'Git Repository Url'
     required: false
+  trim_to_size:
+    description: 'The number of sandboxes to keep when a trim_to_size action is selected'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'
