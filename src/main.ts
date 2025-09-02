@@ -34,9 +34,12 @@ export async function run(): Promise<void> {
     case 'registerBuild':
       await applicationService.registerBuild(inputs);
       break;
+    case 'trim-sandboxes':
+      await applicationService.trimSandboxesFromApplicationProfile(inputs);
+      break;
     default:
       core.setFailed(
-        `Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds, validatePolicyName, registerBuild.`,
+        `Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds, validatePolicyName, registerBuild, and trim-sandboxes.`,
       );
   }
 }

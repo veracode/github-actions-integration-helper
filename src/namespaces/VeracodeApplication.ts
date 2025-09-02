@@ -37,6 +37,7 @@ export interface SandboxResultsData {
 export interface Sandbox {
   guid: string;
   name: string;
+  modified: string;
 }
 
 export interface SelfUserResultsData {

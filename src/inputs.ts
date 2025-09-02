@@ -9,7 +9,8 @@ export enum Actions {
   RemoveSandbox = 'removeSandbox',
   ValidateVeracodeApiCreds = 'validateVeracodeApiCreds',
   ValidatePolicyName = 'validatePolicyName',
-  registerBuild = 'registerBuild'
+  registerBuild = 'registerBuild',
+  trimSandboxes = 'trim-sandboxes'
 }
 
 export type Inputs = {
@@ -39,6 +40,7 @@ export type Inputs = {
   pipeline_scan_flaw_filter: string;
   filtered_results_file: string;
   gitRepositoryUrl: string;
+  trim_to_size: number;
 };
 
 export const parseInputs = (getInput: GetInput): Inputs => {
@@ -82,6 +84,7 @@ export const parseInputs = (getInput: GetInput): Inputs => {
 
   const filtered_results_file = getInput('filtered_results_file');
   const gitRepositoryUrl = getInput('gitRepositoryUrl');
+  const trim_to_size = getInput('trim_to_size');
 
   if (source_repository && source_repository.split('/').length !== 2) {
     throw new Error('source_repository needs to be in the {owner}/{repo} format');
@@ -93,7 +96,7 @@ export const parseInputs = (getInput: GetInput): Inputs => {
     policyname, path, start_line: +start_line, end_line: +end_line, break_build_invalid_policy,
     filter_mitigated_flaws, check_run_name, head_sha, branch, event_type, issue_trigger_flow,
     workflow_app, line_number_slop: +line_number_slop, pipeline_scan_flaw_filter, filtered_results_file,
-    gitRepositoryUrl
+    gitRepositoryUrl,trim_to_size: +trim_to_size
   };
 };
 
@@ -108,6 +111,14 @@ export const vaildateScanResultsActionInput = (inputs: Inputs): boolean => {
 export const vaildateRemoveSandboxInput = (inputs: Inputs): boolean => {
   console.log(inputs);
   if (!inputs.sandboxname) {
+    return false;
+  }
+  return true;
+}
+
+export const vaildateApplicationProfileInput = (inputs: Inputs): boolean => {
+  console.log(inputs);
+  if (!inputs.appname) {
     return false;
   }
   return true;

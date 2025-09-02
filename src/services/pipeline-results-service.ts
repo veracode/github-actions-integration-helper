@@ -291,7 +291,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   }
 
   // What if no policy scan?
-  core.info(`Policy findings: ${policyFindings.length}`);
+  core.info(`Policy findings: ${JSON.stringify(policyFindings.length)}`);
 
   const filter_mitigated_flaws = inputs.filter_mitigated_flaws;
   let policyFindingsToExlcude: VeracodePolicyResult.Finding[] = [];
@@ -314,7 +314,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     });
   }
 
-  core.info(`Mitigated policy findings: ${policyFindingsToExlcude.length}`);
+  core.info(`Mitigated policy findings: ${JSON.stringify(policyFindingsToExlcude.length)}`);
 
   // Remove item in findingsArray if there are item in policyFindingsToExlcude if the file_path and
   // cwe_id and line_number are the same

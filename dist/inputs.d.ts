@@ -7,7 +7,8 @@ export declare enum Actions {
     RemoveSandbox = "removeSandbox",
     ValidateVeracodeApiCreds = "validateVeracodeApiCreds",
     ValidatePolicyName = "validatePolicyName",
-    registerBuild = "registerBuild"
+    registerBuild = "registerBuild",
+    trimSandboxes = "trim-sandboxes"
 }
 export type Inputs = {
     action: Actions;
@@ -36,10 +37,12 @@ export type Inputs = {
     pipeline_scan_flaw_filter: string;
     filtered_results_file: string;
     gitRepositoryUrl: string;
+    trim_to_size: number;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;
 export declare const vaildateRemoveSandboxInput: (inputs: Inputs) => boolean;
+export declare const vaildateApplicationProfileInput: (inputs: Inputs) => boolean;
 export declare const ValidatePolicyName: (inputs: Inputs) => boolean;
 export declare const ValidateVeracodeApiCreds: (inputs: Inputs) => boolean;
 export {};
