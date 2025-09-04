@@ -13,6 +13,7 @@ interface AppConfig {
       sandboxUri: string,
       selfUserUri: string,
       policyUri: string,
+      relayServiceUri: string,
     }
     github: ''
   };
@@ -32,7 +33,8 @@ const appConfig: AppConfig = {
       findingsUri: '/appsec/v2/applications',
       sandboxUri: '/appsec/v1/applications/${appGuid}/sandboxes',
       selfUserUri: '/api/authn/v2/users/self',
-      policyUri: '/appsec/v1/policies'
+      policyUri: '/appsec/v1/policies',
+      relayServiceUri: '/vrm-relay-service/api/scan-report',
     },
     github: ''
   }

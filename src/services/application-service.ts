@@ -5,7 +5,7 @@ import * as Checks from '../namespaces/Checks';
 import { updateChecks } from './check-service';
 import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
-import { Inputs, vaildateRemoveSandboxInput } from '../inputs';
+import { Inputs, vaildateApplicationProfileInput, vaildateRemoveSandboxInput } from '../inputs';
 import * as fs from 'fs/promises';
 import { DefaultArtifactClient } from '@actions/artifact';
 
@@ -37,14 +37,13 @@ export async function getApplicationByName(
   }
 }
 
-export async function removeSandbox(inputs: Inputs): Promise<void> {
-  if (!vaildateRemoveSandboxInput(inputs)) {
-    core.setFailed('sandboxname is required.');
+async function getAppGUIDByAppName(inputs: Inputs) : Promise<any> {
+  if(!vaildateApplicationProfileInput(inputs)) {
+    core.setFailed('Application Profile name is required.');
   }
   const appname = inputs.appname;
   const vid = inputs.vid;
   const vkey = inputs.vkey;
-  const sandboxName = inputs.sandboxname;
 
   let application: VeracodeApplication.Application;
 
@@ -56,6 +55,21 @@ export async function removeSandbox(inputs: Inputs): Promise<void> {
   }
 
   const appGuid = application.guid;
+
+  return appGuid;
+}
+
+export async function removeSandbox(inputs: Inputs): Promise<void> {
+  if(!vaildateRemoveSandboxInput(inputs)) {
+    core.setFailed('sandboxname is required.');
+  }
+
+  const appGuid = await getAppGUIDByAppName(inputs);
+
+  const appname = inputs.appname;
+  const vid = inputs.vid;
+  const vkey = inputs.vkey;
+  const sandboxName = inputs.sandboxname;
 
   let sandboxes: VeracodeApplication.Sandbox[];
   try {
@@ -154,7 +168,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
       await http.getResourceByAttribute<VeracodeApplication.SelfUserResultsData>(inputs.vid, inputs.vkey, getSelfUserDetailsResource);
 
     if (applicationResponse && applicationResponse?.api_credentials?.expiration_ts) {
-      core.info(`VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${applicationResponse.api_credentials.expiration_ts}`);
+      core.info(`VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${JSON.stringify(applicationResponse.api_credentials.expiration_ts)}`);
     } else {
       core.setFailed('Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
       annotations.push({
@@ -234,6 +248,8 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
       resourceUri: appConfig.api.veracode.policyUri,
       queryAttribute: 'name',
       queryValue: encodeURIComponent(inputs.policyname),
+      queryAttribute1: 'name_exact',
+      queryValue1: true,
     };
 
     annotations.push({
@@ -301,4 +317,70 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
   } catch (error) {
     core.info(`Error while creating the ${artifactName} artifact ${error}`);
   }
+}
+
+export async function trimSandboxesFromApplicationProfile(inputs: Inputs): Promise<void> {
+
+  const appGuid = await getAppGUIDByAppName(inputs);
+
+  const appname = inputs.appname;
+  const vid = inputs.vid;
+  const vkey = inputs.vkey;
+  const sandboxName = inputs.sandboxname;
+
+  let sandboxes: VeracodeApplication.Sandbox[];
+  try {
+    sandboxes = await getSandboxesByApplicationGuid(appGuid, vid, vkey);
+  } catch (error) {
+    throw new Error(`Error retrieving sandboxes for application ${appname}`);
+  }
+
+  // Sort sandboxes by their modified field => which is the last scan time
+  let sortedSandboxes = sandboxes.sort((sandboxA,sandboxB) => {
+            let retVal = sandboxA.modified > sandboxB.modified ;
+            return (retVal ? 1 : -1);
+        });
+
+  if (core.isDebug()) {
+    core.info('Date match Sandboxes from oldest to newest:');
+    core.info('===========================================');
+    sortedSandboxes.forEach((sandbox,i) => {
+        core.info(`[${i}] - ${sandbox.name} => ${sandbox.modified}`);
+    });
+    core.info('-------------------------------------------');
+  }
+
+  const total_sb_size = sortedSandboxes.length;
+  const keep_size = inputs.trim_to_size;
+  let sandboxesToDelete = [];
+
+  if (keep_size>=total_sb_size){
+    // Nothing to delete
+    core.info(`Total sandboxes [${total_sb_size}] are equal or less than the trim_to_size input [${keep_size}]. Nothing to delete`);
+    return;
+  } else {
+    const number_to_delete = total_sb_size-keep_size;
+    sandboxesToDelete = sortedSandboxes.slice(0,number_to_delete);
+  }
+
+  core.info('Starting to delete sandboxes');
+  const deletedSandboxNames: string[] = [];
+  await Promise.all(sandboxesToDelete.map(async (sandbox,i) => {
+      core.info(`[${i}] - ${sandbox.name} => ${sandbox.modified}, ${sandbox.guid}`);
+      const removeSandboxResource = {
+        resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
+        resourceId: sandbox.guid,
+      };
+      try {
+        await http.deleteResourceById(vid, vkey, removeSandboxResource);
+        core.info(`Sandbox '${sandbox.name}' with GUID [${sandbox.guid}] deleted`);
+        deletedSandboxNames.push(`'${sandbox.name}' (GUID:${sandbox.guid})`);
+      } catch (error) {
+        core.warning(`Error removing sandbox:${error}`);
+        core.setFailed(`Error removing sandbox ${sandbox.name}`);
+      }
+  }));
+
+  core.info(`Deleted Sandboxes names: ${JSON.stringify(deletedSandboxNames)}`);
+  core.info('---------------------------------');
 }

@@ -1,6 +1,7 @@
 export interface Finding {
   // Define the properties of a single finding
   issue_id: number;
+  build_id: number;
   description: string;
   violates_policy: boolean;
   finding_status: {

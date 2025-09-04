@@ -32,6 +32,7 @@ export interface SandboxResultsData {
 export interface Sandbox {
     guid: string;
     name: string;
+    modified: string;
 }
 export interface SelfUserResultsData {
     api_credentials: {
@@ -42,6 +43,12 @@ export interface policyResultsData {
     page: {
         size: number;
         total_elements: number;
+    };
+}
+export interface OrganizationData {
+    organization: {
+        org_id: string;
+        org_name: string;
     };
 }
 export {};
