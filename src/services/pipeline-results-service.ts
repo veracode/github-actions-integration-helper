@@ -385,7 +385,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
         await updateChecks(
           octokit,
           checkStatic,
-          Checks.Conclusion.Neutral,
+          Checks.Conclusion.ActionRequired,
           annotationBatch,
           'Here\'s the summary of the scan result.',
         );
