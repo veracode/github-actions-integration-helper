@@ -61,7 +61,6 @@ async function getApplicationByName(appname, vid, vkey) {
         const applicationResponse = await http.getResourceByAttribute(vid, vkey, getApplicationByNameResource);
         const applications = ((_a = applicationResponse._embedded) === null || _a === void 0 ? void 0 : _a.applications) || [];
         if (applications.length === 0) {
-            core.info(`No application found with name ${appname}`);
             throw new Error(`No application found with name ${appname}`);
         }
         else if (applications.length > 1) {
@@ -70,7 +69,6 @@ async function getApplicationByName(appname, vid, vkey) {
         return applications[0];
     }
     catch (error) {
-        console.error(error);
         throw error;
     }
 }

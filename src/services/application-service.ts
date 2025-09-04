@@ -26,7 +26,6 @@ export async function getApplicationByName(
 
     const applications = applicationResponse._embedded?.applications || [];
     if (applications.length === 0) {
-      core.info(`No application found with name ${appname}`)
       throw new Error(`No application found with name ${appname}`);
     } else if (applications.length > 1) {
       core.info(`Multiple applications found with name ${appname}, selecting the first found`);
@@ -34,7 +33,6 @@ export async function getApplicationByName(
 
     return applications[0];
   } catch (error) {
-    console.error(error);
     throw error;
   }
 }
