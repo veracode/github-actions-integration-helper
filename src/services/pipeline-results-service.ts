@@ -382,13 +382,13 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     for (let index = 0; index < annotations.length / maxNumberOfAnnotations; index++) {
       const annotationBatch = annotations.slice(index * maxNumberOfAnnotations, (index + 1) * maxNumberOfAnnotations);
       if (annotationBatch.length > 0) {
-        await updateChecks(
-          octokit,
-          checkStatic,
-          inputs.fail_checks_on_policy ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
-          annotationBatch,
-          'Here\'s the summary of the scan result.',
-        );
+        // await updateChecks(
+        //   octokit,
+        //   checkStatic,
+        //   inputs.fail_checks_on_policy ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
+        //   annotationBatch,
+        //   'Here\'s the summary of the scan result.',
+        // );
       }
     }
   }
