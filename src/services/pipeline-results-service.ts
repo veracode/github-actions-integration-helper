@@ -216,7 +216,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     owner: ownership.owner,
     repo: ownership.repo,
     check_run_id: inputs.check_run_id,
-    status: Checks.Status.Completed,
+    status: Checks.Status.InProgress,
   };
 
   const octokit = new Octokit({
