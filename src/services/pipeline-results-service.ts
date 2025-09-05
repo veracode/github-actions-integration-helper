@@ -6,7 +6,7 @@ import * as Checks from '../namespaces/Checks';
 import * as VeracodePipelineResult from '../namespaces/VeracodePipelineResult';
 import * as VeracodePolicyResult from '../namespaces/VeracodePolicyResult';
 import {Inputs, vaildateScanResultsActionInput} from '../inputs';
-import {updateChecks} from './check-service';
+import {updateChecks, updateChecksTest} from './check-service';
 import {getApplicationByName} from './application-service';
 import {getApplicationFindings} from './findings-service';
 
@@ -382,10 +382,10 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     for (let index = 0; index < annotations.length / maxNumberOfAnnotations; index++) {
       const annotationBatch = annotations.slice(index * maxNumberOfAnnotations, (index + 1) * maxNumberOfAnnotations);
       if (annotationBatch.length > 0) {
-        await updateChecks(
+        await updateChecksTest(
           octokit,
           checkStatic,
-          Checks.Conclusion.ActionRequired,
+        //  Checks.Conclusion.ActionRequired,
           annotationBatch,
           'Here\'s the summary of the scan result.',
         );
