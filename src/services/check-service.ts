@@ -4,7 +4,7 @@ import * as Checks from '../namespaces/Checks';
 export async function updateChecks(
   octokit: Octokit,
   checksStatic: Checks.ChecksStatic,
-  conclusion: Checks.Conclusion,
+  conclusion: Checks.Conclusion | undefined,
   annotations: Checks.Annotation[],
   summary: string,
 ): Promise<void> {
@@ -13,13 +13,14 @@ export async function updateChecks(
     repo: checksStatic.repo,
     check_run_id: checksStatic.check_run_id,
     status: checksStatic.status,
-    conclusion: conclusion,
+    ...(conclusion !== conclusion !== undefined && { conclusion }),
     output: {
       annotations: annotations as [],
       title: 'Veracode Static Code Analysis',
       summary: summary,
     },
   };
+
   await octokit.checks.update(data);
 }
 export async function updateChecksTest(
