@@ -6,7 +6,7 @@ import * as Checks from '../namespaces/Checks';
 import * as VeracodePipelineResult from '../namespaces/VeracodePipelineResult';
 import * as VeracodePolicyResult from '../namespaces/VeracodePolicyResult';
 import {Inputs, vaildateScanResultsActionInput} from '../inputs';
-import {updateChecks, updateChecksTest} from './check-service';
+import {updateChecks} from './check-service';
 import {getApplicationByName} from './application-service';
 import {getApplicationFindings} from './findings-service';
 
@@ -227,13 +227,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   // check_run_id and source_repository are provided
   if (!vaildateScanResultsActionInput(inputs)) {
     core.setFailed('token, check_run_id and source_repository are required.');
-    // await updateChecks(
-    //   octokit,
-    //   checkStatic,
-    //   inputs.fail_checks_on_error ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
-    //   [],
-    //   'Token, check_run_id and source_repository are required.',
-    // );
     return;
   }
 
@@ -247,13 +240,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
     core.setFailed('Error reading or parsing pipeline scan results.');
-    // await updateChecks(
-    //   octokit,
-    //   checkStatic,
-    //   inputs.fail_checks_on_error ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
-    //   [],
-    //   'Error reading or parsing pipeline scan results.',
-    // );
     return;
   }
 
@@ -274,8 +260,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
       core.info(`Error while updating the ${artifactName} artifact ${error}`);
     }
     core.info('No pipeline findings, exiting and update the github check status to success');
-    // update inputs.check_run_id status to success
-   // await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings');
     return;
   }
 
@@ -344,8 +328,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
 
   if (filteredFindingsArray.length === 0) {
     core.info('No pipeline findings after filtering, exiting and update the github check status to success');
-    // update inputs.check_run_id status to success
-   // await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings');
     return;
   } else {
     // use octokit to check the language of the source repository. If it is a java project, then
@@ -382,10 +364,10 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     for (let index = 0; index < annotations.length / maxNumberOfAnnotations; index++) {
       const annotationBatch = annotations.slice(index * maxNumberOfAnnotations, (index + 1) * maxNumberOfAnnotations);
       if (annotationBatch.length > 0) {
-        await updateChecksTest(
+        await updateChecks(
           octokit,
           checkStatic,
-        //  Checks.Conclusion.ActionRequired,
+          undefined,
           annotationBatch,
           'Here\'s the summary of the scan result.',
         );
