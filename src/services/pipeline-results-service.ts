@@ -375,6 +375,11 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     const annotations = getAnnotations(filteredFindingsArray, javaMaven);
     const maxNumberOfAnnotations = 50;
 
+     //Failing the build if there are vulneribilities 
+      if(filteredFindingsArray.length !== policyFindings.length && inputs.fail_checks_on_policy == true ){
+        core.setFailed('Vulneribilities detected in the Repository')
+       }
+
     for (let index = 0; index < annotations.length / maxNumberOfAnnotations; index++) {
       const annotationBatch = annotations.slice(index * maxNumberOfAnnotations, (index + 1) * maxNumberOfAnnotations);
       if (annotationBatch.length > 0) {
