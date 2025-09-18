@@ -274,8 +274,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
       core.info(`Error while updating the ${artifactName} artifact ${error}`);
     }
     core.info('No pipeline findings, exiting and update the github check status to success');
-    // update inputs.check_run_id status to success
-    await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings');
     return;
   }
 
@@ -344,8 +342,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
 
   if (filteredFindingsArray.length === 0) {
     core.info('No pipeline findings after filtering, exiting and update the github check status to success');
-    // update inputs.check_run_id status to success
-    await updateChecks(octokit, checkStatic, Checks.Conclusion.Success, [], 'No pipeline findings');
     return;
   } else {
     // use octokit to check the language of the source repository. If it is a java project, then
@@ -379,13 +375,19 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     const annotations = getAnnotations(filteredFindingsArray, javaMaven);
     const maxNumberOfAnnotations = 50;
 
+     //Failing the build if there are vulneribilities 
+      if(filteredFindingsArray.length !== policyFindings.length && inputs.fail_checks_on_policy == true ){
+        core.setFailed('Vulneribilities detected in the Repository')
+       }
+
     for (let index = 0; index < annotations.length / maxNumberOfAnnotations; index++) {
       const annotationBatch = annotations.slice(index * maxNumberOfAnnotations, (index + 1) * maxNumberOfAnnotations);
       if (annotationBatch.length > 0) {
+        checkStatic.status = Checks.Status.InProgress;
         await updateChecks(
           octokit,
           checkStatic,
-          inputs.fail_checks_on_policy ? Checks.Conclusion.Failure : Checks.Conclusion.Success,
+          undefined,
           annotationBatch,
           'Here\'s the summary of the scan result.',
         );
