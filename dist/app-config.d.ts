@@ -17,6 +17,13 @@ interface AppConfig {
         };
         github: '';
     };
+    constants: {
+        tempDir: string;
+        preserveFiles: string[];
+        syncPrTitle: string;
+        branchPrefix: string;
+        source_repo_url: string;
+    };
 }
 declare const appConfig: AppConfig;
 export default appConfig;

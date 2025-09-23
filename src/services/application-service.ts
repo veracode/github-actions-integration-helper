@@ -6,14 +6,19 @@ import { updateChecks } from './check-service';
 import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
 import { Inputs, vaildateApplicationProfileInput, vaildateRemoveSandboxInput } from '../inputs';
-import * as fs from 'fs/promises';
+import * as fspromises from 'fs/promises';
+import * as fs from 'fs';
 import { DefaultArtifactClient } from '@actions/artifact';
+import axios from 'axios';
+import { execSync, ExecSyncOptions } from 'child_process';
+import path from 'path';
 
 export async function getApplicationByName(
   appname: string,
   vid: string,
   vkey: string,
 ): Promise<VeracodeApplication.Application> {
+  // eslint-disable-next-line no-useless-catch
   try {
     const getApplicationByNameResource = {
       resourceUri: appConfig.api.veracode.applicationUri,
@@ -311,7 +316,7 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
       'sha': inputs.head_sha,
       'issue_trigger_flow': inputs.issue_trigger_flow ?? false,
     }
-    await fs.writeFile(filePath, JSON.stringify(metadata, null, 2));
+    await fspromises.writeFile(filePath, JSON.stringify(metadata, null, 2));
     await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
     core.info(`${artifactName} directory uploaded successfully under the artifact.`);
   } catch (error) {
@@ -383,4 +388,199 @@ export async function trimSandboxesFromApplicationProfile(inputs: Inputs): Promi
 
   core.info(`Deleted Sandboxes names: ${JSON.stringify(deletedSandboxNames)}`);
   core.info('---------------------------------');
+}
+
+export async function syncRepositories(inputs: Inputs): Promise<void> {
+
+  const run = (cmd: string, options: ExecSyncOptions = {}): void => {
+    core.info(`Command: ${cmd}\n`);
+    execSync(cmd, { stdio: 'inherit', ...options });
+  };
+
+  const getInstallationIdForOrg = async (orgName: string,jwtToken: string): Promise<number> => {
+    
+    core.info(`Getting installation ID for org: ${orgName}`);
+    const response = await axios.get(`https://${appConfig.hostName.github}/app/installations`, {
+      headers: {
+        Authorization: `Bearer ${jwtToken}`,
+        Accept: 'application/vnd.github+json',
+      },
+    });
+
+    const installation = response.data.find(
+      (inst: any) => inst.account.login.toLowerCase() === orgName.toLowerCase()
+    );
+
+    if (!installation) {
+      core.setFailed(`Installation not found for org: ${orgName}`);
+    }
+
+    return installation.id;
+  };
+
+  const getInstallationToken = async (jwtToken: string,installationId: number): Promise<string> => {
+    core.info(`Getting installation token for installation ID: ${installationId}`);
+    const url = `https://${appConfig.hostName.github}/app/installations/${installationId}/access_tokens`;
+    const response = await axios.post(
+      url,
+      {},
+      {
+        headers: {
+          Authorization: `Bearer ${jwtToken}`,
+          Accept: 'application/vnd.github+json',
+        },
+      }
+    );
+    
+    return response.data.token;
+  };
+
+  const closePreviousSyncPRs = async (token: string): Promise<number[]> => {
+    core.info('Closing previous synchronization Pull Request\'s if any');
+    
+    const url = `https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/pulls`;
+
+    const response = await axios.get(url, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: 'application/vnd.github+json',
+      },
+      params: {
+        state: 'open',
+        base: 'main',
+      },
+    });
+
+    const prsToClose = response.data.filter(
+      (pr: any) =>
+        pr.title === appConfig.constants.syncPrTitle || pr.head.ref.startsWith(appConfig.constants.branchPrefix)
+    );
+
+    for (const pr of prsToClose) {
+      core.info(`Closing existing PR: #${pr.number} - ${pr.title}`);
+
+      await axios.patch(`https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/pulls/${pr.number}`,
+        { state: 'closed' },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+          },
+        }
+      );
+
+      await axios.post(`https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/issues/${pr.number}/comments`,
+        {
+          body: '🤖 This PR was automatically closed because a new synchronization PR has been created.',
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            Accept: 'application/vnd.github+json',
+          },
+        }
+      );
+    }
+
+    return prsToClose.map((pr: any) => pr.number);
+  };
+
+  const createPullRequest = async (token: string,headBranch: string,baseBranch: string,title: string,body: string): Promise<string> => {
+    core.info('Creating new PR');
+    const url = `https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/pulls`;
+
+    const payload = {
+      title,
+      body,
+      head: headBranch,
+      base: baseBranch,
+    };
+
+    core.info('PR Payload: ' + JSON.stringify(payload, null, 2));
+
+    try {
+      const response = await axios.post(url, payload, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
+        },
+      });
+
+      return response.data.html_url;
+    } catch (error: any) {
+      if (error.response) {
+        core.setFailed(`GitHub API Error: ${JSON.stringify(error.response.data)}`);
+      } else if (error.request) {
+        core.setFailed(`No response from GitHub: ${error.message}`);
+      } else {
+        core.setFailed(`Request setup error: ${error.message}`);
+      }
+      throw error;
+    }
+  };
+
+  const deleteLocalFileIfExists = (filePath: string): void => {
+    if (fs.existsSync(filePath)) {
+      const stat = fs.lstatSync(filePath);
+      if (stat.isDirectory()) {
+        fs.rmSync(filePath, { recursive: true, force: true });
+        console.log(`🗑️ Removed directory ${filePath}`);
+      } else {
+        fs.unlinkSync(filePath);
+        console.log(`🗑️ Removed file ${filePath}`);
+      }
+    }
+  };
+
+  // === SYNC START ===
+  core.info(`Starting repository sync for org: ${inputs.owner}`);
+
+  const installationId:number  = await getInstallationIdForOrg(inputs.owner, inputs.jwtToken);
+
+  const targetToken = await getInstallationToken(inputs.jwtToken, installationId);
+
+  const targetRepoUrl = `https://x-access-token:${targetToken}@github.com/${inputs.owner}/veracode.git`;
+
+  if (fs.existsSync(appConfig.constants.tempDir)) run(`rm -rf ${appConfig.constants.tempDir}`);
+
+  run(`git clone --branch main --single-branch ${appConfig.constants.source_repo_url} ${appConfig.constants.tempDir}`);
+  process.chdir(appConfig.constants.tempDir);
+
+  appConfig.constants.preserveFiles.forEach(file => {
+    const filePath = path.join(process.cwd(), file);
+    deleteLocalFileIfExists(filePath);
+  });
+
+  const tempBranch = `sync-workflow-actions-${new Date().toISOString().slice(0,10)}`;
+  run(`git checkout -b ${tempBranch}`);
+
+  try {
+    run('git remote remove target');
+    core.info('Removed existing "target" remote');
+  } catch {
+    core.info('No existing "target" remote to remove');
+  }
+
+  run(`git remote add target ${targetRepoUrl}`);
+  core.info('🔗 Added "target" remote');
+  run(`git push target ${tempBranch} --force`);
+
+  core.info('Waiting for GitHub to register the new branch...');
+  await new Promise(resolve => setTimeout(resolve, 3000));
+
+  await closePreviousSyncPRs(targetToken);
+
+  const prUrl = await createPullRequest(
+    targetToken,
+    tempBranch,
+    'main',
+    appConfig.constants.syncPrTitle,
+    'Automated PR created by sync script. Please review and merge.'
+  );
+
+  core.info(`✅ Pull Request created: ${prUrl}`);
+
+  process.chdir('..');
+  run(`rm -rf ${appConfig.constants.tempDir}`);
+  core.info('🧹 Cleanup complete');
 }
