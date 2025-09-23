@@ -10,6 +10,9 @@ import * as applicationService from './services/application-service';
  */
 
 export async function run(): Promise<void> {
+  core.warning(
+    'The code in this branch has been merged into the `main` branch and is no longer active. Please refer to the `main` branch for the latest code and updates.',
+  );
   const inputs = parseInputs(core.getInput);
 
   switch (inputs.action) {
