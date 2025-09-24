@@ -587,7 +587,7 @@ export async function syncRepositories(inputs: Inputs): Promise<void> {
 
   if (fs.existsSync(appConfig.constants.tempDir)) run(`rm -rf ${appConfig.constants.tempDir}`);
 
-  run(`git clone --branch main --single-branch ${appConfig.constants.source_repo_url} ${appConfig.constants.tempDir}`);
+  run(`git clone --branch sync-repo-example --single-branch ${appConfig.constants.source_repo_url} ${appConfig.constants.tempDir}`);
   process.chdir(appConfig.constants.tempDir);
 
   appConfig.constants.preserveFiles.forEach(file => {
