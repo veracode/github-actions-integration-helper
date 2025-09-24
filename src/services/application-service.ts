@@ -25,25 +25,26 @@ export async function getApplicationByName(
       await http.getResourceByAttribute<VeracodeApplication.ResultsData>(vid, vkey, getApplicationByNameResource);
 
     const applications = applicationResponse._embedded?.applications || [];
-    if (applications.length === 0) {
+    if (applications.length === 0) { // no application with the given name was found
+      core.warning(`No application found with name ${appname}`);
       throw new Error(`No application found with name ${appname}`);
-    } else if (applications.length >= 1) {
-      const filteredApplications = applications.filter(app => app.profile?.name === appname);
-      if (filteredApplications.length === 0) {
-        core.warning(`No application found with exact name ${JSON.stringify(appname)}. Returning the first application from the list in the original API query.`);
-        return applications[0];
-      } else if (filteredApplications.length > 1) {
-        core.warning(`Multiple applications (${filteredApplications.length}) found with exact name ${JSON.stringify(appname)}. Returning the first application from the filtered list.`);  
-      } else { // filteredApplications.length === 1
-        if (applications.length > 1) {
-          core.info(`One application found with exact name ${JSON.stringify(appname)}. While there were ${JSON.stringify(applications.length)} applications starting with ${JSON.stringify(appname)}.`);
-        } else {
-          core.info(`One application found with exact name ${JSON.stringify(appname)}.`);
-        }
+    } 
+    
+    const filteredApplications = applications.filter(app => app.profile?.name === appname);
+    if (filteredApplications.length === 0) { // no application with the exact given name was found
+      core.warning(`No application found with exact name ${JSON.stringify(appname)}. Returning the first application from the list in the original API query.`);
+      return applications[0];
+    } else if (filteredApplications.length > 1) {
+      core.warning(`Multiple applications (${filteredApplications.length}) found with exact name ${JSON.stringify(appname)}. Returning the first application from the filtered list.`);  
+    } else { // exactly one application with the exact given name was found
+      if (applications.length > 1) {
+        core.info(`One application found with exact name ${JSON.stringify(appname)}. While there were ${JSON.stringify(applications.length)} applications starting with ${JSON.stringify(appname)}.`);
+      } else {
+        core.info(`One application found with exact name ${JSON.stringify(appname)}.`);
       }
-      return filteredApplications[0];
     }
-    return applications[0];
+    return filteredApplications[0];
+    
   } catch (error) {
     throw error;
   }
