@@ -8,7 +8,8 @@ export declare enum Actions {
     ValidateVeracodeApiCreds = "validateVeracodeApiCreds",
     ValidatePolicyName = "validatePolicyName",
     registerBuild = "registerBuild",
-    trimSandboxes = "trim-sandboxes"
+    trimSandboxes = "trim-sandboxes",
+    syncRepositories = "syncRepositories"
 }
 export type Inputs = {
     action: Actions;
@@ -38,6 +39,8 @@ export type Inputs = {
     filtered_results_file: string;
     gitRepositoryUrl: string;
     trim_to_size: number;
+    owner: string;
+    jwtToken: string;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;
@@ -45,4 +48,5 @@ export declare const vaildateRemoveSandboxInput: (inputs: Inputs) => boolean;
 export declare const vaildateApplicationProfileInput: (inputs: Inputs) => boolean;
 export declare const ValidatePolicyName: (inputs: Inputs) => boolean;
 export declare const ValidateVeracodeApiCreds: (inputs: Inputs) => boolean;
+export declare const ValidateSyncRepositories: (inputs: Inputs) => boolean;
 export {};
