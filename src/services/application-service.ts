@@ -595,7 +595,7 @@ export async function syncRepositories(inputs: Inputs): Promise<void> {
     deleteLocalFileIfExists(filePath);
   });
 
-  const tempBranch = `sync-workflow-actions-${new Date().toISOString().slice(0,10)}`;
+  const tempBranch = `sync-workflow-actions-${new Date()}`;
   run(`git checkout -b ${tempBranch}`);
 
   try {
