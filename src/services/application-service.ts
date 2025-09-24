@@ -28,9 +28,18 @@ export async function getApplicationByName(
     if (applications.length === 0) {
       throw new Error(`No application found with name ${appname}`);
     } else if (applications.length > 1) {
-      core.info(`Multiple applications found with name ${appname}, selecting the first found`);
+      core.info(`Multiple applications found starting with ${JSON.stringify(appname)}`);
+      const filteredApplications = applications.filter(app => app.profile?.name === appname);
+      if (filteredApplications.length === 0) {
+        core.warning(`No application found with exact name ${JSON.stringify(appname)}. Returning the first application from the list in the original API query.`);
+        return applications[0];
+      } else if (filteredApplications.length > 1) {
+        core.warning(`Multiple applications (${filteredApplications.length}) found with exact name ${JSON.stringify(appname)}. Returning the first application from the filtered list.`);  
+      } else {
+        core.info(`One application found with exact name ${JSON.stringify(appname)}. While there were ${JSON.stringify(applications.length)} applications starting with ${JSON.stringify(appname)}.`);
+      }
+      return filteredApplications[0];
     }
-
     return applications[0];
   } catch (error) {
     throw error;
@@ -345,7 +354,7 @@ export async function trimSandboxesFromApplicationProfile(inputs: Inputs): Promi
     core.info('Date match Sandboxes from oldest to newest:');
     core.info('===========================================');
     sortedSandboxes.forEach((sandbox,i) => {
-        core.info(`[${i}] - ${sandbox.name} => ${sandbox.modified}`);
+        core.info(`[${i}] - ${JSON.stringify(sandbox.name)} => ${sandbox.modified}`);
     });
     core.info('-------------------------------------------');
   }
@@ -356,7 +365,7 @@ export async function trimSandboxesFromApplicationProfile(inputs: Inputs): Promi
 
   if (keep_size>=total_sb_size){
     // Nothing to delete
-    core.info(`Total sandboxes [${total_sb_size}] are equal or less than the trim_to_size input [${keep_size}]. Nothing to delete`);
+    core.info(`Total sandboxes [${total_sb_size}] are equal or less than the trim_to_size input [${JSON.stringify(keep_size)}]. Nothing to delete`);
     return;
   } else {
     const number_to_delete = total_sb_size-keep_size;
@@ -366,14 +375,14 @@ export async function trimSandboxesFromApplicationProfile(inputs: Inputs): Promi
   core.info('Starting to delete sandboxes');
   const deletedSandboxNames: string[] = [];
   await Promise.all(sandboxesToDelete.map(async (sandbox,i) => {
-      core.info(`[${i}] - ${sandbox.name} => ${sandbox.modified}, ${sandbox.guid}`);
+    core.info(`[${i}] - ${JSON.stringify(sandbox.name)} => ${sandbox.modified}, ${sandbox.guid}`);
       const removeSandboxResource = {
         resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
         resourceId: sandbox.guid,
       };
       try {
         await http.deleteResourceById(vid, vkey, removeSandboxResource);
-        core.info(`Sandbox '${sandbox.name}' with GUID [${sandbox.guid}] deleted`);
+        core.info(`Sandbox '${JSON.stringify(sandbox.name)}' with GUID [${JSON.stringify(sandbox.guid)}] deleted`);
         deletedSandboxNames.push(`'${sandbox.name}' (GUID:${sandbox.guid})`);
       } catch (error) {
         core.warning(`Error removing sandbox:${error}`);
