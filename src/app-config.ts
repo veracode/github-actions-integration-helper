@@ -16,6 +16,13 @@ interface AppConfig {
       relayServiceUri: string,
     }
     github: ''
+  },
+  constants:{
+    tempDir: string,
+    preserveFiles: string[],
+    syncPrTitle: string,
+    branchPrefix: string,
+    source_repo_url: string,
   };
 }
 
@@ -37,6 +44,13 @@ const appConfig: AppConfig = {
       relayServiceUri: '/vrm-relay-service/api/scan-report',
     },
     github: ''
+  },
+  constants:{
+    tempDir: './temp-repo',
+    preserveFiles: ['.github/workflows', 'actions'],
+    syncPrTitle: 'Sync workflows and actions folders',
+    branchPrefix: 'Workflows-Actions-Sync-',
+    source_repo_url:'https://github.com/Veracode-Workflow-App-Preprod/github-actions-integration.git', // URL of the source repository to sync from, need to change this to point to prod repo before release
   }
 };
 

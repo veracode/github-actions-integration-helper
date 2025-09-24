@@ -10,7 +10,8 @@ export enum Actions {
   ValidateVeracodeApiCreds = 'validateVeracodeApiCreds',
   ValidatePolicyName = 'validatePolicyName',
   registerBuild = 'registerBuild',
-  trimSandboxes = 'trim-sandboxes'
+  trimSandboxes = 'trim-sandboxes',
+  syncRepositories = 'syncRepositories',
 }
 
 export type Inputs = {
@@ -41,6 +42,8 @@ export type Inputs = {
   filtered_results_file: string;
   gitRepositoryUrl: string;
   trim_to_size: number;
+  owner: string;
+  jwtToken: string;
 };
 
 export const parseInputs = (getInput: GetInput): Inputs => {
@@ -86,6 +89,9 @@ export const parseInputs = (getInput: GetInput): Inputs => {
   const gitRepositoryUrl = getInput('gitRepositoryUrl');
   const trim_to_size = getInput('trim_to_size');
 
+  const organizationName = getInput('owner');
+  const jwtToken = getInput('jwtToken'); 
+
   if (source_repository && source_repository.split('/').length !== 2) {
     throw new Error('source_repository needs to be in the {owner}/{repo} format');
   }
@@ -96,7 +102,7 @@ export const parseInputs = (getInput: GetInput): Inputs => {
     policyname, path, start_line: +start_line, end_line: +end_line, break_build_invalid_policy,
     filter_mitigated_flaws, check_run_name, head_sha, branch, event_type, issue_trigger_flow,
     workflow_app, line_number_slop: +line_number_slop, pipeline_scan_flaw_filter, filtered_results_file,
-    gitRepositoryUrl,trim_to_size: +trim_to_size
+    gitRepositoryUrl,trim_to_size: +trim_to_size, owner: organizationName, jwtToken
   };
 };
 
@@ -135,6 +141,14 @@ export const ValidatePolicyName = (inputs: Inputs): boolean => {
 export const ValidateVeracodeApiCreds = (inputs: Inputs): boolean => {
   console.log(inputs);
   if (!inputs.token || !inputs.check_run_id || !inputs.source_repository) {
+    return false;
+  }
+  return true;
+}
+
+export const ValidateSyncRepositories = (inputs: Inputs): boolean => {
+  console.log(inputs);
+  if (!inputs.owner || !inputs.jwtToken) {
     return false;
   }
   return true;

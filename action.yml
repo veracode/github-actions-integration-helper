@@ -93,6 +93,12 @@ inputs:
   trim_to_size:
     description: 'The number of sandboxes to keep when a trim_to_size action is selected'
     required: false
+  owner:
+    description: 'The organization or user account that owns the repository.'
+    required: false
+  jwtToken:
+    description: 'The GitHub App JWT token.'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'
