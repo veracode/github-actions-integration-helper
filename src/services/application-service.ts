@@ -27,16 +27,19 @@ export async function getApplicationByName(
     const applications = applicationResponse._embedded?.applications || [];
     if (applications.length === 0) {
       throw new Error(`No application found with name ${appname}`);
-    } else if (applications.length > 1) {
-      core.info(`Multiple applications found starting with ${JSON.stringify(appname)}`);
+    } else if (applications.length >= 1) {
       const filteredApplications = applications.filter(app => app.profile?.name === appname);
       if (filteredApplications.length === 0) {
         core.warning(`No application found with exact name ${JSON.stringify(appname)}. Returning the first application from the list in the original API query.`);
         return applications[0];
       } else if (filteredApplications.length > 1) {
         core.warning(`Multiple applications (${filteredApplications.length}) found with exact name ${JSON.stringify(appname)}. Returning the first application from the filtered list.`);  
-      } else {
-        core.info(`One application found with exact name ${JSON.stringify(appname)}. While there were ${JSON.stringify(applications.length)} applications starting with ${JSON.stringify(appname)}.`);
+      } else { // filteredApplications.length === 1
+        if (applications.length > 1) {
+          core.info(`One application found with exact name ${JSON.stringify(appname)}. While there were ${JSON.stringify(applications.length)} applications starting with ${JSON.stringify(appname)}.`);
+        } else {
+          core.info(`One application found with exact name ${JSON.stringify(appname)}.`);
+        }
       }
       return filteredApplications[0];
     }
