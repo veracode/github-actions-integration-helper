@@ -50,7 +50,7 @@ const appConfig: AppConfig = {
     preserveFiles: ['.github/workflows', 'actions'],
     syncPrTitle: 'Sync workflows and actions folders',
     branchPrefix: 'Workflows-Actions-Sync-',
-    source_repo_url:'https://github.com/veracode/github-actions-integration.git',
+    source_repo_url:'https://github.com/Veracode-Workflow-App-Preprod/github-actions-integration.git', // URL of the source repository to sync from, need to change this to point to prod repo before release
   }
 };
 
