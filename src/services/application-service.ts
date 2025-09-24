@@ -42,15 +42,15 @@ export async function getApplicationByName(
   }
 }
 
-async function getAppGUIDByAppName(inputs: Inputs) : Promise<any> {
-  if(!vaildateApplicationProfileInput(inputs)) {
+async function getAppGUIDByAppName(inputs: Inputs): Promise<any> {
+  if (!vaildateApplicationProfileInput(inputs)) {
     core.setFailed('Application Profile name is required.');
   }
   const appname = inputs.appname;
   const vid = inputs.vid;
   const vkey = inputs.vkey;
 
-  let application:VeracodeApplication.Application;
+  let application: VeracodeApplication.Application;
 
   try {
     application = await getApplicationByName(appname, vid, vkey);
@@ -65,7 +65,7 @@ async function getAppGUIDByAppName(inputs: Inputs) : Promise<any> {
 }
 
 export async function removeSandbox(inputs: Inputs): Promise<void> {
-  if(!vaildateRemoveSandboxInput(inputs)) {
+  if (!vaildateRemoveSandboxInput(inputs)) {
     core.setFailed('sandboxname is required.');
   }
 
@@ -89,7 +89,7 @@ export async function removeSandbox(inputs: Inputs): Promise<void> {
     core.setFailed(`No sandbox found with name ${sandboxName}`);
     return;
   }
-  
+
   try {
     const removeSandboxResource = {
       resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
@@ -104,8 +104,8 @@ export async function removeSandbox(inputs: Inputs): Promise<void> {
 }
 
 async function getSandboxesByApplicationGuid(
-  appGuid: string, 
-  vid: string, 
+  appGuid: string,
+  vid: string,
   vkey: string
 ): Promise<VeracodeApplication.Sandbox[]> {
   try {
@@ -341,16 +341,16 @@ export async function trimSandboxesFromApplicationProfile(inputs: Inputs): Promi
   }
 
   // Sort sandboxes by their modified field => which is the last scan time
-  let sortedSandboxes = sandboxes.sort((sandboxA,sandboxB) => {
-            let retVal = sandboxA.modified > sandboxB.modified ;
-            return (retVal ? 1 : -1);
-        });
+  let sortedSandboxes = sandboxes.sort((sandboxA, sandboxB) => {
+    let retVal = sandboxA.modified > sandboxB.modified;
+    return (retVal ? 1 : -1);
+  });
 
   if (core.isDebug()) {
     core.info('Date match Sandboxes from oldest to newest:');
     core.info('===========================================');
-    sortedSandboxes.forEach((sandbox,i) => {
-        core.info(`[${i}] - ${sandbox.name} => ${sandbox.modified}`);
+    sortedSandboxes.forEach((sandbox, i) => {
+      core.info(`[${i}] - ${sandbox.name} => ${sandbox.modified}`);
     });
     core.info('-------------------------------------------');
   }
@@ -359,31 +359,31 @@ export async function trimSandboxesFromApplicationProfile(inputs: Inputs): Promi
   const keep_size = inputs.trim_to_size;
   let sandboxesToDelete = [];
 
-  if (keep_size>=total_sb_size){
+  if (keep_size >= total_sb_size) {
     // Nothing to delete
     core.info(`Total sandboxes [${total_sb_size}] are equal or less than the trim_to_size input [${keep_size}]. Nothing to delete`);
     return;
   } else {
-    const number_to_delete = total_sb_size-keep_size;
-    sandboxesToDelete = sortedSandboxes.slice(0,number_to_delete);
+    const number_to_delete = total_sb_size - keep_size;
+    sandboxesToDelete = sortedSandboxes.slice(0, number_to_delete);
   }
 
   core.info('Starting to delete sandboxes');
   const deletedSandboxNames: string[] = [];
-  await Promise.all(sandboxesToDelete.map(async (sandbox,i) => {
-      core.info(`[${i}] - ${sandbox.name} => ${sandbox.modified}, ${sandbox.guid}`);
-      const removeSandboxResource = {
-        resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
-        resourceId: sandbox.guid,
-      };
-      try {
-        await http.deleteResourceById(vid, vkey, removeSandboxResource);
-        core.info(`Sandbox '${sandbox.name}' with GUID [${sandbox.guid}] deleted`);
-        deletedSandboxNames.push(`'${sandbox.name}' (GUID:${sandbox.guid})`);
-      } catch (error) {
-        core.warning(`Error removing sandbox:${error}`);
-        core.setFailed(`Error removing sandbox ${sandbox.name}`);
-      }
+  await Promise.all(sandboxesToDelete.map(async (sandbox, i) => {
+    core.info(`[${i}] - ${sandbox.name} => ${sandbox.modified}, ${sandbox.guid}`);
+    const removeSandboxResource = {
+      resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
+      resourceId: sandbox.guid,
+    };
+    try {
+      await http.deleteResourceById(vid, vkey, removeSandboxResource);
+      core.info(`Sandbox '${sandbox.name}' with GUID [${sandbox.guid}] deleted`);
+      deletedSandboxNames.push(`'${sandbox.name}' (GUID:${sandbox.guid})`);
+    } catch (error) {
+      core.warning(`Error removing sandbox:${error}`);
+      core.setFailed(`Error removing sandbox ${sandbox.name}`);
+    }
   }));
 
   core.info(`Deleted Sandboxes names: ${JSON.stringify(deletedSandboxNames)}`);
@@ -397,92 +397,123 @@ export async function syncRepositories(inputs: Inputs): Promise<void> {
     execSync(cmd, { stdio: 'inherit', ...options });
   };
 
-  const getInstallationIdForOrg = async (orgName: string,jwtToken: string): Promise<number> => {
-    
+  const getInstallationIdForOrg = async (orgName: string, jwtToken: string): Promise<number> => {
     core.info(`Getting installation ID for org: ${orgName}`);
-    const response = await axios.get(`https://${appConfig.hostName.github}/app/installations`, {
-      headers: {
-        Authorization: `Bearer ${jwtToken}`,
-        Accept: 'application/vnd.github+json',
-      },
-    });
-
-    const installation = response.data.find(
-      (inst: any) => inst.account.login.toLowerCase() === orgName.toLowerCase()
-    );
-
-    if (!installation) {
-      core.setFailed(`Installation not found for org: ${orgName}`);
-    }
-
-    return installation.id;
-  };
-
-  const getInstallationToken = async (jwtToken: string,installationId: number): Promise<string> => {
-    core.info(`Getting installation token for installation ID: ${installationId}`);
-    const url = `https://${appConfig.hostName.github}/app/installations/${installationId}/access_tokens`;
-    const response = await axios.post(
-      url,
-      {},
-      {
+    try {
+      const response = await axios.get(`https://${appConfig.hostName.github}/app/installations`, {
         headers: {
           Authorization: `Bearer ${jwtToken}`,
           Accept: 'application/vnd.github+json',
         },
+      });
+
+      const installation = response.data.find(
+        (inst: any) => inst.account.login.toLowerCase() === orgName.toLowerCase()
+      );
+
+      if (!installation) {
+        core.setFailed(`Installation not found for org: ${orgName}`);
+        throw new Error(`Installation not found for org: ${orgName}`);
       }
-    );
-    
-    return response.data.token;
+
+      return installation.id;
+    } catch (error) {
+      core.setFailed(`Error getting installation ID for org: ${orgName}`);
+      throw new Error(`Error getting installation ID for org: ${orgName}`);
+    }
+  };
+
+  const getInstallationToken = async (jwtToken: string, installationId: number): Promise<string> => {
+    core.info(`Getting installation token for installation ID: ${installationId}`);
+    try {
+      const url = `https://${appConfig.hostName.github}/app/installations/${installationId}/access_tokens`;
+      const response = await axios.post(
+        url,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${jwtToken}`,
+            Accept: 'application/vnd.github+json',
+          },
+        }
+      );
+
+      if (!response.data) {
+        core.setFailed(`No data received from GitHub for installation ID: ${installationId}`);
+        throw new Error(`No data received from GitHub for installation ID: ${installationId}`);
+      }
+      return response.data.token;
+    } catch (error) {
+      core.setFailed(`Error getting installation token for installation ID: ${installationId}`);
+      throw new Error(`Error getting installation token for installation ID: ${installationId}`);
+    }
   };
 
   const closePreviousSyncPRs = async (token: string): Promise<number[]> => {
     core.info('Closing previous synchronization Pull Request\'s if any');
-    
-    const url = `https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/pulls`;
 
-    const response = await axios.get(url, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: 'application/vnd.github+json',
-      },
-      params: {
-        state: 'open',
-        base: 'main',
-      },
-    });
+    try {
+      const url = `https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/pulls`;
 
-    const prsToClose = response.data.filter(
-      (pr: any) =>
-        pr.title === appConfig.constants.syncPrTitle || pr.head.ref.startsWith(appConfig.constants.branchPrefix)
-    );
-
-    for (const pr of prsToClose) {
-      core.info(`Closing existing PR: #${pr.number} - ${pr.title}`);
-
-      await axios.patch(`https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/pulls/${pr.number}`,
-        { state: 'closed' },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/vnd.github+json',
-          },
-        }
-      );
-
-      await axios.post(`https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/issues/${pr.number}/comments`,
-        {
-          body: '🤖 This PR was automatically closed because a new synchronization PR has been created.',
+      const response = await axios.get(url, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: 'application/vnd.github+json',
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            Accept: 'application/vnd.github+json',
-          },
-        }
-      );
-    }
+        params: {
+          state: 'open',
+          base: 'main',
+        },
+      });
 
-    return prsToClose.map((pr: any) => pr.number);
+      const prsToClose = response.data.filter(
+        (pr: any) =>
+          pr.title === appConfig.constants.syncPrTitle || pr.head.ref.startsWith(appConfig.constants.branchPrefix)
+      );
+
+      const closedPrNumbers: number[] = [];
+
+      for (const pr of prsToClose) {
+        try {
+          core.info(`Closing existing PR: #${pr.number} - ${pr.title}`);
+
+          // Close the PR
+          await axios.patch(`https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/pulls/${pr.number}`,
+            { state: 'closed' },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/vnd.github+json',
+              },
+            }
+          );
+
+          // Add comment to the closed PR
+          await axios.post(`https://${appConfig.hostName.github}/repos/${inputs.owner}/veracode/issues/${pr.number}/comments`,
+            {
+              body: '🤖 This PR was automatically closed because a new synchronization PR has been created.',
+            },
+            {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                Accept: 'application/vnd.github+json',
+              },
+            }
+          );
+
+          closedPrNumbers.push(pr.number);
+          core.info(`Successfully closed PR #${pr.number}`);
+        } catch (error) {
+          core.error(`Failed to close PR #${pr.number}: ${error}`);
+          // Continue with the next PR even if this one fails
+        }
+      }
+
+      return closedPrNumbers;
+    } catch (error) {
+      core.error(`Failed to fetch or process pull requests: ${error}`);
+      throw error; // Re-throw to let the caller handle the error
+    }
   };
 
   const createPullRequest = async (token: string,headBranch: string,baseBranch: string,title: string,body: string): Promise<string> => {
@@ -578,7 +609,7 @@ export async function syncRepositories(inputs: Inputs): Promise<void> {
     'Automated PR created by sync script. Please review and merge.'
   );
 
-  core.info(`✅ Pull Request created: ${prUrl}`);
+  core.info(`Pull Request created: ${prUrl}`);
 
   process.chdir('..');
   run(`rm -rf ${appConfig.constants.tempDir}`);
