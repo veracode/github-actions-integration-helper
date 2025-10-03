@@ -7,7 +7,7 @@ import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
 import { Inputs, vaildateApplicationProfileInput, vaildateRemoveSandboxInput } from '../inputs';
 import * as fs from 'fs/promises';
-import { DefaultArtifactClient } from '@actions/artifact';
+import * as artifact from '@actions/artifact';
 
 export async function getApplicationByName(
   appname: string,
@@ -315,7 +315,8 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
       repo: repo[1],
     };
     const rootDirectory = process.cwd();
-    const artifactClient = new DefaultArtifactClient();
+
+    let artifactClient = artifact.create()
     const metadata = {
       'check_run_type': inputs.event_type,
       'repository_name': ownership.repo,

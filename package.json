@@ -27,7 +27,7 @@
   "license": "MIT",
   "private": false,
   "devDependencies": {
-    "@actions/artifact": "^2.1.11",
+    "@actions/artifact": "^1.1.1",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.19.10",
     "@types/sjcl": "^1.0.34",

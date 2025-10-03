@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import {Octokit} from '@octokit/rest';
-import {DefaultArtifactClient} from '@actions/artifact';
+import * as artifact from '@actions/artifact';
 import * as fs from 'fs/promises';
 import * as Checks from '../namespaces/Checks';
 import * as VeracodePipelineResult from '../namespaces/VeracodePipelineResult';
@@ -68,7 +68,7 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<num
   const filePath = 'pipeline_scan_flaw_filter.json';
   const artifactName = 'Veracode Pipeline-Scan Results - Filtered findings';
   const rootDirectory = process.cwd();
-  const artifactClient = new DefaultArtifactClient();
+  let artifactClient = artifact.create()
 
   if (findingsArray.length === 0 ||
       pipelineScanFlawFilter === 'all_results' ||
@@ -262,7 +262,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const filePath = 'mitigated_'+inputs.filtered_results_file;
   const artifactName = 'Veracode Pipeline-Scan Results - '+inputs.filtered_results_file+' - Mitigated findings';
   const rootDirectory = process.cwd();
-  const artifactClient = new DefaultArtifactClient();
+  let artifactClient = artifact.create()
 
   if (findingsArray.length === 0) {
     try {
