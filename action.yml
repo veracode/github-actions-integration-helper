@@ -93,6 +93,10 @@ inputs:
   trim_to_size:
     description: 'The number of sandboxes to keep when a trim_to_size action is selected'
     required: false
+  platformType:
+    description: 'Specifies the platform environment type — use cloud for CLOUD or enterprise for GHES.'
+    default: 'CLOUD'
+    required: false
 runs:
   using: 'node20'
   main: 'dist/index.js'

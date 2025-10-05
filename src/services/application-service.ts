@@ -7,7 +7,8 @@ import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
 import { Inputs, vaildateApplicationProfileInput, vaildateRemoveSandboxInput } from '../inputs';
 import * as fs from 'fs/promises';
-import * as artifact from '@actions/artifact';
+import { DefaultArtifactClient } from '@actions/artifact';
+import * as artifactV1 from "@actions/artifact-v1";
 
 export async function getApplicationByName(
   appname: string,
@@ -316,7 +317,14 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
     };
     const rootDirectory = process.cwd();
 
-    let artifactClient = artifact.create()
+    let artifactClient;
+
+    if(inputs?.platformType === 'GHES') {
+      artifactClient = artifactV1.create();
+    } else {
+      artifactClient = new DefaultArtifactClient();
+    }
+
     const metadata = {
       'check_run_type': inputs.event_type,
       'repository_name': ownership.repo,
