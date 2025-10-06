@@ -319,7 +319,7 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
 
     let artifactClient;
 
-    if(inputs?.platformType === 'GHES') {
+    if(inputs?.platformType === 'ENTERPRISE') {
       artifactClient = artifactV1.create();
     } else {
       artifactClient = new DefaultArtifactClient();

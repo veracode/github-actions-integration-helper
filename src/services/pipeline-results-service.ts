@@ -271,7 +271,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const rootDirectory = process.cwd();
   let artifactClient;
 
-  if(inputs?.platformType === 'GHES') {
+  if(inputs?.platformType === 'ENTERPRISE') {
     artifactClient = artifactV1.create();
   } else {
     artifactClient = new DefaultArtifactClient();
