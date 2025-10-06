@@ -71,10 +71,12 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<num
   const rootDirectory = process.cwd();
   let artifactClient;
 
-  if(inputs?.platformType === 'GHES') {
+  if (inputs?.platformType === 'ENTERPRISE') {
     artifactClient = artifactV1.create();
+    core.info(`Using V1 : ${artifactClient}`);
   } else {
     artifactClient = new DefaultArtifactClient();
+    core.info(`Using V2 : ${artifactClient}`);
   }
 
   if (findingsArray.length === 0 ||
@@ -271,10 +273,12 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   const rootDirectory = process.cwd();
   let artifactClient;
 
-  if(inputs?.platformType === 'ENTERPRISE') {
+  if (inputs?.platformType === 'ENTERPRISE') {
     artifactClient = artifactV1.create();
+    core.info(`Using V1 : ${artifactClient}`);
   } else {
     artifactClient = new DefaultArtifactClient();
+    core.info(`Using V2 : ${artifactClient}`);
   }
 
   if (findingsArray.length === 0) {

@@ -321,8 +321,10 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
 
     if(inputs?.platformType === 'ENTERPRISE') {
       artifactClient = artifactV1.create();
+      core.info(`Using V1 : ${artifactClient}`);
     } else {
       artifactClient = new DefaultArtifactClient();
+      core.info(`Using V2 : ${artifactClient}`);
     }
 
     const metadata = {
