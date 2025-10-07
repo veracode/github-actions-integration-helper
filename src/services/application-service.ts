@@ -7,7 +7,6 @@ import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
 import { Inputs, vaildateApplicationProfileInput, vaildateRemoveSandboxInput } from '../inputs';
 import * as fs from 'fs/promises';
-import { DefaultArtifactClient } from '@actions/artifact';
 
 export async function getApplicationByName(
   appname: string,
@@ -315,7 +314,17 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
       repo: repo[1],
     };
     const rootDirectory = process.cwd();
-    const artifactClient = new DefaultArtifactClient();
+    const { DefaultArtifactClient } = require('@actions/artifact');
+    const artifactV1 = require('@actions/artifact-v1');
+    let artifactClient;
+
+    if (inputs.platformType === 'ENTERPRISE') {
+        artifactClient = artifactV1.create();
+        core.info(`Initialized the artifact object using version V1.`);
+    } else {
+        artifactClient = new DefaultArtifactClient();
+        core.info(`Initialized the artifact object using version V2.`);
+    }
     const metadata = {
       'check_run_type': inputs.event_type,
       'repository_name': ownership.repo,

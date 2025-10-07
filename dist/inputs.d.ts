@@ -38,6 +38,7 @@ export type Inputs = {
     filtered_results_file: string;
     gitRepositoryUrl: string;
     trim_to_size: number;
+    platformType: string;
 };
 export declare const parseInputs: (getInput: GetInput) => Inputs;
 export declare const vaildateScanResultsActionInput: (inputs: Inputs) => boolean;

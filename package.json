@@ -28,8 +28,9 @@
   "private": false,
   "devDependencies": {
     "@actions/artifact": "^2.1.11",
+    "@actions/artifact-v1": "npm:@actions/artifact@^1.1.1",
     "@types/jest": "^29.5.11",
-    "@types/node": "^20.19.10",
+    "@types/node": "^20.19.19",
     "@types/sjcl": "^1.0.34",
     "@typescript-eslint/eslint-plugin": "^6.19.0",
     "@typescript-eslint/parser": "^6.19.0",
