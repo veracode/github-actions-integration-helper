@@ -49,6 +49,7 @@ const http = __importStar(require("../api/http-request"));
 async function preparePolicyResults(inputs) {
     const octokit = new rest_1.Octokit({
         auth: inputs.token,
+        baseUrl: process.env.GITHUB_API_URL,
     });
     const repo = inputs.source_repository.split('/');
     const ownership = {

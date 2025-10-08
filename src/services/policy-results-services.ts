@@ -12,6 +12,7 @@ import * as http from '../api/http-request';
 export async function preparePolicyResults(inputs: Inputs): Promise<void> {
   const octokit = new Octokit({
     auth: inputs.token,
+    baseUrl: process.env.GITHUB_API_URL,
   });
 
   const repo = inputs.source_repository.split('/');
