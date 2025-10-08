@@ -140,8 +140,6 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     repo: repo[1],
   };
 
-  console.log("process.env.GITHUB_API_URL: ", process.env.GITHUB_API_URL);
-
   const octokit = new Octokit({
     auth: inputs.token,
     baseUrl: process.env.GITHUB_API_URL,

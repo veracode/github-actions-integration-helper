@@ -228,8 +228,6 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     status: Checks.Status.Completed,
   };
 
-  console.log("process.env.GITHUB_API_URL: ", process.env.GITHUB_API_URL);
-  
   const octokit = new Octokit({
     auth: inputs.token,
     baseUrl: process.env.GITHUB_API_URL,
