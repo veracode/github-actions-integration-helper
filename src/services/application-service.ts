@@ -139,10 +139,11 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     owner: repo[0],
     repo: repo[1],
   };
-
+  
+  const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
   const octokit = new Octokit({
     auth: inputs.token,
-    baseUrl: process.env.GITHUB_API_URL,
+    baseUrl: baseUrl
   });
 
   const checkStatic: Checks.ChecksStatic = {
@@ -223,9 +224,10 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
     repo: repo[1],
   };
 
+  const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
   const octokit = new Octokit({
     auth: inputs.token,
-    baseUrl: process.env.GITHUB_API_URL,
+    baseUrl: baseUrl
   });
 
   const checkStatic: Checks.ChecksStatic = {

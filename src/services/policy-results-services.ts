@@ -10,9 +10,10 @@ import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
 
 export async function preparePolicyResults(inputs: Inputs): Promise<void> {
+  const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
   const octokit = new Octokit({
     auth: inputs.token,
-    baseUrl: process.env.GITHUB_API_URL,
+    baseUrl: baseUrl
   });
 
   const repo = inputs.source_repository.split('/');

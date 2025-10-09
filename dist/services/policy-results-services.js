@@ -47,9 +47,10 @@ const check_service_1 = require("./check-service");
 const app_config_1 = __importDefault(require("../app-config"));
 const http = __importStar(require("../api/http-request"));
 async function preparePolicyResults(inputs) {
+    const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
     const octokit = new rest_1.Octokit({
         auth: inputs.token,
-        baseUrl: process.env.GITHUB_API_URL,
+        baseUrl: baseUrl
     });
     const repo = inputs.source_repository.split('/');
     const ownership = {
