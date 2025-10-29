@@ -136,7 +136,7 @@ function getAnnotations(policyFindings: VeracodePolicyResult.Finding[], javaMave
           'src/main/webapp/',
         );
     }
-
+    console.log("individualfindings",element)
     const displayMessage = element.description
       .replace(/<span>/g, '')
       .replace(/<\/span> /g, '\n')
