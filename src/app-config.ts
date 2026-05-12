@@ -3,6 +3,7 @@ interface AppConfig {
     veracode: {
       us: string,
       eu: string,
+      fed: string
     },
     github: string,
   };
@@ -23,7 +24,8 @@ const appConfig: AppConfig = {
   hostName: {
     veracode: {
       us: 'api.veracode.com',
-      eu: 'api.veracode.eu'
+      eu: 'api.veracode.eu',
+      fed: 'api.veracode.us'
     },
     github: 'api.github.com'
   },
