@@ -44,6 +44,7 @@ const parseInputs = (getInput) => {
     const gitRepositoryUrl = getInput('gitRepositoryUrl');
     const trim_to_size = getInput('trim_to_size');
     const platformType = getInput('platformType');
+    const debug = getInput('debug');
     if (source_repository && source_repository.split('/').length !== 2) {
         throw new Error('source_repository needs to be in the {owner}/{repo} format');
     }
