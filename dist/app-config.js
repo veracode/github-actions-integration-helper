@@ -4,7 +4,8 @@ const appConfig = {
     hostName: {
         veracode: {
             us: 'api.veracode.com',
-            eu: 'api.veracode.eu'
+            eu: 'api.veracode.eu',
+            fed: 'api.veracode.us'
         },
         github: 'api.github.com'
     },
