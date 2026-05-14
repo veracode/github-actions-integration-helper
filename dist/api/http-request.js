@@ -87,6 +87,11 @@ async function deleteResourceById(vid, vkey, resource) {
         vid = vid.split('-')[1] || '';
         vkey = vkey.split('-')[1] || '';
     }
+    //else if (vid.startsWith('vera01fi-')) {
+     //   host = app_config_1.default.hostName.veracode.fed;
+     //   vid = vid.split('-')[1] || '';
+     //   vkey = vkey.split('-')[1] || '';
+    //}
     const queryUrl = `${resourceUri}/${resourceId}`;
     const headers = {
         Authorization: (0, veracode_hmac_1.calculateAuthorizationHeader)({
