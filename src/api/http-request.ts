@@ -27,6 +27,11 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
     vid = vid.split('-')[1] || '';  // Extract part after '-'
     vkey = vkey.split('-')[1] || ''; // Extract part after '-'
   }
+  else if (vid.startsWith('vera01fi')) {
+    host = appConfig.hostName.veracode.fed;
+    vid = vid.split('-')[1] || '';  // Extract part after '-'
+    vkey = vkey.split('-')[1] || ''; // Extract part after '-'
+  }
   let urlQueryParams = queryAttribute !== '' ? `?${queryAttribute}=${queryValue}` : '';
   if (queryAttribute1) {
     urlQueryParams = urlQueryParams + `&${queryAttribute1}=${queryValue1}`;
@@ -60,6 +65,11 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
     vid = vid.split('-')[1] || '';  // Extract part after '-'
     vkey = vkey.split('-')[1] || ''; // Extract part after '-'
   }
+  else if (vid.startsWith('vera01fi')) {
+    host = appConfig.hostName.veracode.fed;
+    vid = vid.split('-')[1] || '';  // Extract part after '-'
+    vkey = vkey.split('-')[1] || ''; // Extract part after '-'
+  }
   const queryUrl = `${resourceUri}/${resourceId}`;
   const headers = {
     Authorization: calculateAuthorizationHeader({
@@ -81,10 +91,16 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
 
 export async function postResourceByAttribute<T>(vid: string, vkey: string, scanReport: string): Promise<T> {
   const resourceUri = appConfig.api.veracode.relayServiceUri;
-  const host = appConfig.hostName.veracode.us;
-  if (vid.startsWith('vera01')) {
-    vid = vid.split('-')[1] || '';
-    vkey = vkey.split('-')[1] || '';
+  let host = appConfig.hostName.veracode.us;
+  if (vid.startsWith('vera01ei')) {
+    host = appConfig.hostName.veracode.fed;
+    vid = vid.split('-')[1] || '';  // Extract part after '-'
+    vkey = vkey.split('-')[1] || ''; // Extract part after '-'
+  }
+  else if (vid.startsWith('vera01fi')) {
+    host = appConfig.hostName.veracode.fed;
+    vid = vid.split('-')[1] || '';  // Extract part after '-'
+    vkey = vkey.split('-')[1] || ''; // Extract part after '-'
   }
   const headers = {
     Authorization: calculateAuthorizationHeader({
