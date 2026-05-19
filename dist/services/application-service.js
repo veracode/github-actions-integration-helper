@@ -213,12 +213,12 @@ async function validateVeracodeApiCreds(inputs) {
             vid = vid.split('-')[1] || '';
             vkey = vkey.split('-')[1] || '';
         }
-        else if (vid.startsWith('vera01')) {
-            console.log('Commercial Instance' , app_config_1.default.hostName.veracode.us );
-            host = app_config_1.default.hostName.veracode.us;
-            vid = vid.split('-')[1] || '';
-            vkey = vkey.split('-')[1] || '';
-        }
+        // else if (vid.startsWith('vera01')) {
+        //     console.log('Commercial Instance' , app_config_1.default.hostName.veracode.us );
+        //     host = app_config_1.default.hostName.veracode.us;
+        //     vid = vid.split('-')[1] || '';
+        //     vkey = vkey.split('-')[1] || '';
+        // }
         console.log('[DEBUG] ResourceURI: selfUserUri ', appConfig.api.veracode.selfUserUri);
         const getSelfUserDetailsResource = {
             resourceUri: appConfig.api.veracode.selfUserUri,
@@ -235,6 +235,8 @@ async function validateVeracodeApiCreds(inputs) {
             core.info(`VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${JSON.stringify(applicationResponse.api_credentials.expiration_ts)}`);
         }
         else {
+            console.log('[DEBUG]: Ran into an issue with the id and key, unkown');
+            core.info('[DEBUG]: There was an issue with the formatting of the Veracode API ID and Key');
             core.setFailed('Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
             annotations.push({
                 path: '/',
