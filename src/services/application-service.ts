@@ -139,7 +139,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     owner: repo[0],
     repo: repo[1],
   };
-  let host = appConfig.hostName.veracode.us; // this is set to us in the fedramp branch 
+  let host = appConfig.hostName.veracode.us; // this is set to fed in the fedramp branch 
   const octokit = new Octokit({
     auth: inputs.token,
   });
@@ -205,14 +205,14 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
       core.info(`VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${JSON.stringify(applicationResponse.api_credentials.expiration_ts)}`);
     } 
     else {
-      core.log(`[DEBUG]: Unknown \nHost Identified: ${host}`);
-      core.setFailed('Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
+      core.debug(`[DEBUG]: Host Identified: ${host}`);
+      core.setFailed('Unknown/Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
       annotations.push({
         path: '/',
         start_line: 0,
         end_line: 0,
         annotation_level: 'failure',
-        title: 'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
+        title: 'Unknown/Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
         message: `[ERROR]: There was something that went wrong with your API ID and Key\nPlease check the VERACODE_API_ID and VERACODE_API_KEY configured under the veracode repository secrets, or your organization secrets.\nHost: ${host}`,
       });
       await updateChecks(
@@ -220,7 +220,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
         checkStatic,
         Checks.Conclusion.Failure,
         annotations,
-        'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
+        'Unknown/Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
       );
       return;
     }
