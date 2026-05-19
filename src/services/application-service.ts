@@ -139,7 +139,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     owner: repo[0],
     repo: repo[1],
   };
-
+  let host = appConfig.hostName.veracode.us; // this is set to us in the fedramp branch 
   const octokit = new Octokit({
     auth: inputs.token,
   });
@@ -150,6 +150,28 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     check_run_id: inputs.check_run_id,
     status: Checks.Status.Completed,
   };
+  
+  
+  if (vid.startsWith('vera01fi')) {
+    console.log('FED prefix has been found');
+    host = appConfig.hostName.veracode.fed;
+    //vid = vid.split('-')[1] || '';  // Extract part after '-'
+    //vkey = vkey.split('-')[1] || ''; // Extract part after '-'
+  }
+  else if (vid.startsWith('vera01ei')) {
+    console.log('EU prefix has been sent');
+    host = appConfig.hostName.veracode.eu;
+    //vid = vid.split('-')[1] || '';  // Extract part after '-'
+    //vkey = vkey.split('-')[1] || ''; // Extract part after '-'
+  }
+  else (vid.startsWith('vera01')) {
+    console.log('Unknown generic prefix found');
+    host = appConfig.hostName.veracode.eu;
+    //vid = vid.split('-')[1] || '';  // Extract part after '-'
+    //vkey = vkey.split('-')[1] || ''; // Extract part after '-'
+ }
+ console.log('Host: ', host);
+  
   try {
     if (!inputs.vid || !inputs.vkey) {
       core.setFailed('Missing VERACODE_API_ID / VERACODE_API_KEY secret key.');
@@ -184,7 +206,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     } 
     else {
       core.info('[DEBUG]: Unknown ');
-      core.setFailed('Unkown error: Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
+      core.setFailed(`Unkown error: Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY\nHost Identified: ${host}`);
       annotations.push({
         path: '/',
         start_line: 0,
