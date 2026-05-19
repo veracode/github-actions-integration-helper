@@ -205,15 +205,15 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
       core.info(`VERACODE_API_ID and VERACODE_API_KEY is valid, Credentials expiration date - ${JSON.stringify(applicationResponse.api_credentials.expiration_ts)}`);
     } 
     else {
-      core.info('[DEBUG]: Unknown ');
-      core.setFailed(`Unkown error: Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY\nHost Identified: ${host}`);
+      core.log(`[DEBUG]: Unknown \nHost Identified: ${host}`);
+      core.setFailed('Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY');
       annotations.push({
         path: '/',
         start_line: 0,
         end_line: 0,
         annotation_level: 'failure',
         title: 'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
-        message: '[ERROR]: There was something that went wrong with your API ID and Key\nPlease check the VERACODE_API_ID and VERACODE_API_KEY configured under the organization secrets.',
+        message: `[ERROR]: There was something that went wrong with your API ID and Key\nPlease check the VERACODE_API_ID and VERACODE_API_KEY configured under the veracode repository secrets, or your organization secrets.\nHost: ${host}`,
       });
       await updateChecks(
         octokit,
