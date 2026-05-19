@@ -54,7 +54,7 @@ const parseInputs = (getInput) => {
         policyname, path, start_line: +start_line, end_line: +end_line, break_build_invalid_policy,
         filter_mitigated_flaws, check_run_name, head_sha, branch, event_type, issue_trigger_flow,
         workflow_app, line_number_slop: +line_number_slop, pipeline_scan_flaw_filter, filtered_results_file,
-        gitRepositoryUrl, trim_to_size: +trim_to_size, platformType
+        gitRepositoryUrl, trim_to_size: +trim_to_size, platformType, debug: +debug
     };
 };
 exports.parseInputs = parseInputs;
@@ -90,6 +90,7 @@ const ValidatePolicyName = (inputs) => {
     return true;
 };
 exports.ValidatePolicyName = ValidatePolicyName;
+
 const ValidateVeracodeApiCreds = (inputs) => {
     console.log(inputs);
     if (!inputs.token || !inputs.check_run_id || !inputs.source_repository) {

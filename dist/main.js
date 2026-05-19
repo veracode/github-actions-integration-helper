@@ -32,8 +32,10 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
+
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.run = run;
+
 const core = __importStar(require("@actions/core"));
 const inputs_1 = require("./inputs");
 const policyService = __importStar(require("./services/policy-service"));
