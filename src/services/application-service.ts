@@ -169,8 +169,8 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
     host = appConfig.hostName.veracode.eu;
     //vid = vid.split('-')[1] || '';  // Extract part after '-'
     //vkey = vkey.split('-')[1] || ''; // Extract part after '-'
- }
- console.log('Host: ', host);
+  }
+  console.log('Host: ', host);
   
   try {
     if (!inputs.vid || !inputs.vkey) {
@@ -220,7 +220,7 @@ export async function validateVeracodeApiCreds(inputs: Inputs): Promise<string |
         checkStatic,
         Checks.Conclusion.Failure,
         annotations,
-        'Unknown/Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
+        'Invalid/Expired VERACODE_API_ID and VERACODE_API_KEY.',
       );
       return;
     }
