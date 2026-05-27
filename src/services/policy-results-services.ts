@@ -42,6 +42,39 @@ export async function preparePolicyResults(inputs: Inputs): Promise<void> {
     return;
   }
 
+  const submittedMessage = 'Static Scan Submitted. Please check the Veracode Platform for results.';
+
+  if (String(inputs.wait_for_scan_completion).toLowerCase() === 'false') {
+    try {
+      core.info(submittedMessage);
+
+      await updateChecks(
+        octokit,
+        checkStatic,
+        inputs.fail_checks_on_error
+          ? Checks.Conclusion.Failure
+          : Checks.Conclusion.Success,
+        [],
+        submittedMessage,
+      );
+    } catch (error) {
+      core.debug(`Error while updating the checks: ${error}`);
+      core.setFailed('Error while updating the checks');
+
+      await updateChecks(
+        octokit,
+        checkStatic,
+        inputs.fail_checks_on_error
+          ? Checks.Conclusion.Failure
+          : Checks.Conclusion.Success,
+        [],
+        'Error while updating the checks.',
+      );
+    }
+
+    return;
+  }
+
   let findingsArray: VeracodePolicyResult.Finding[] = [];
   let resultsUrl: string = '';
 
