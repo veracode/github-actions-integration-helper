@@ -97,6 +97,10 @@ inputs:
     description: 'Specifies the platform environment type — use CLOUD for GitHub.com or ENTERPRISE for GitHub Enterprise Server (GHES).'
     default: 'CLOUD'
     required: false
+  wait_for_scan_completion:
+    description: 'Wait for the Veracode Static Scan to complete and poll for the final results. If set to false, the scan will be submitted asynchronously and the workflow will continue immediately.'
+    default: 'true'
+    required: false 
 
 runs:
   using: 'node20'
