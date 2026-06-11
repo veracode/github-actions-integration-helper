@@ -45,6 +45,7 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
   try {
     const response = await fetch(appUrl, { headers });
     const data = await response.json();
+    console.log(`Data received from getResourceByAttribute: ${JSON.stringify(data)}`);
     return data as T;
   } catch (error) {
     console.log("error in getResourceByAttribute", error);
@@ -106,6 +107,7 @@ export async function postResourceByAttribute<T>(vid: string, vkey: string, scan
     });
 
     const data = await response.json();
+    console.log(`Data received from postResourceByAttribute: ${JSON.stringify(data)}`);
     core.info(`Scan report response: ${JSON.stringify(data)}`);
     return data as T;
   } catch (error) {
