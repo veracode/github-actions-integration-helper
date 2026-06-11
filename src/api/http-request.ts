@@ -47,6 +47,7 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
     const data = await response.json();
     return data as T;
   } catch (error) {
+    console.log("error in getResourceByAttribute", error);
     throw new Error(`Failed to fetch resource: ${error}`);
   }
 }
@@ -74,7 +75,7 @@ export async function deleteResourceById(vid: string, vkey: string, resource: Re
   try {
     await fetch(appUrl, { method: 'DELETE', headers });
   } catch (error) {
-    console.log(error);
+    console.log("error in deleteResourceById", error);
     throw new Error(`Failed to delete resource: ${error}`);
   }
 }
@@ -108,6 +109,7 @@ export async function postResourceByAttribute<T>(vid: string, vkey: string, scan
     core.info(`Scan report response: ${JSON.stringify(data)}`);
     return data as T;
   } catch (error) {
+    console.log("error in postResourceByAttribute", error);
     throw new Error(`Failed to post resource: ${error}`);
   }
 }

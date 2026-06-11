@@ -75,6 +75,7 @@ async function getResourceByAttribute(vid, vkey, resource) {
         return data;
     }
     catch (error) {
+        console.log("error in getResourceByAttribute", error);
         throw new Error(`Failed to fetch resource: ${error}`);
     }
 }
@@ -102,7 +103,7 @@ async function deleteResourceById(vid, vkey, resource) {
         await fetch(appUrl, { method: 'DELETE', headers });
     }
     catch (error) {
-        console.log(error);
+        console.log("error in deleteResourceById", error);
         throw new Error(`Failed to delete resource: ${error}`);
     }
 }
@@ -135,6 +136,7 @@ async function postResourceByAttribute(vid, vkey, scanReport) {
         return data;
     }
     catch (error) {
+        console.log("error in postResourceByAttribute", error);
         throw new Error(`Failed to post resource: ${error}`);
     }
 }
