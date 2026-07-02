@@ -267,6 +267,10 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   }
 
   core.info(`Pipeline findings: ${findingsArray.length}`);
+  
+  findingsArray.forEach((finding) => {
+    core.debug(`VeracodePipelineResult finding: ${JSON.stringify(finding, null, 2)}`);
+  });
 
   const filePath = 'mitigated_'+inputs.filtered_results_file;
   const artifactName = 'Veracode Pipeline-Scan Results - '+inputs.filtered_results_file+' - Mitigated findings';
@@ -333,17 +337,23 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
 
   core.info(`Mitigated policy findings: ${JSON.stringify(policyFindingsToExlcude.length)}`);
 
+
+  policyFindingsToExlcude.forEach((finding) => {
+    core.debug(`policyFindingsToExlcude finding: ${JSON.stringify(finding, null, 2)}`);
+  });
+
   // Remove item in findingsArray if there are item in policyFindingsToExlcude if the file_path and
   // cwe_id and line_number are the same
   const filteredFindingsArray = findingsArray.filter((finding) => {
     return !policyFindingsToExlcude.some((mitigatedFinding) => {
-      if (mitigatedFinding.finding_details.file_path.charAt(0) === '/') {
+      if (mitigatedFinding?.finding_details?.file_path?.charAt(0) === '/') {
         mitigatedFinding.finding_details.file_path = mitigatedFinding.finding_details.file_path.substring(1);
       }
+
       return (
-        finding.files.source_file.file === mitigatedFinding.finding_details.file_path &&
-        +finding.cwe_id === mitigatedFinding.finding_details.cwe.id &&
-        Math.abs(finding.files.source_file.line - mitigatedFinding.finding_details.file_line_number) <= LINE_NUMBER_SLOP
+        finding?.files?.source_file?.file === mitigatedFinding?.finding_details?.file_path &&
+        +(finding?.cwe_id) === mitigatedFinding?.finding_details?.cwe?.id &&
+        Math.abs(finding?.files?.source_file?.line - mitigatedFinding?.finding_details?.file_line_number) <= LINE_NUMBER_SLOP
       );
     });
   });
