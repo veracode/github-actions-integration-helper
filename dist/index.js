@@ -100505,10 +100505,12 @@ async function getResourceByAttribute(vid, vkey, resource) {
         }),
     };
     const appUrl = `https://${host}${resourceUri}${urlQueryParams}`;
+    console.log(`******${host},${resourceUri},${urlQueryParams}`);
+    console.log(`*****Fetching resource from URL: ${appUrl}`);
     try {
         const response = await fetch(appUrl, { headers });
         const data = await response.json();
-        console.log(`Data received from getResourceByAttribute: ${JSON.stringify(data)}`);
+        console.log(`*****Data received from getResourceByAttribute: ${JSON.stringify(data, null, 2)}`);
         return data;
     }
     catch (error) {
@@ -101679,6 +101681,7 @@ async function preparePipelineResults(inputs) {
     if (findingsArray.length === 0) {
         try {
             veracodePipelineResult.findings = [];
+            console.log("++++++=>", JSON.stringify(veracodePipelineResult, null, 2));
             await fs.writeFile(filePath, JSON.stringify(veracodePipelineResult, null, 2));
             await artifactClient.uploadArtifact(artifactName, [filePath], rootDirectory);
             core.info(`${artifactName} directory uploaded successfully under the artifact.`);

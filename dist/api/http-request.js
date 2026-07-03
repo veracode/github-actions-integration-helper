@@ -69,13 +69,16 @@ async function getResourceByAttribute(vid, vkey, resource) {
         }),
     };
     const appUrl = `https://${host}${resourceUri}${urlQueryParams}`;
+    console.log(`******${host},${resourceUri},${urlQueryParams}`);
+    console.log(`*****Fetching resource from URL: ${appUrl}`);
     try {
         const response = await fetch(appUrl, { headers });
         const data = await response.json();
+        console.log(`*****Data received from getResourceByAttribute: ${JSON.stringify(data, null, 2)}`);
         return data;
     }
     catch (error) {
-        console.log("error in getResourceByAttribute", error);
+        console.log('error in getResourceByAttribute', error);
         throw new Error(`Failed to fetch resource: ${error}`);
     }
 }
@@ -103,7 +106,7 @@ async function deleteResourceById(vid, vkey, resource) {
         await fetch(appUrl, { method: 'DELETE', headers });
     }
     catch (error) {
-        console.log("error in deleteResourceById", error);
+        console.log('error in deleteResourceById', error);
         throw new Error(`Failed to delete resource: ${error}`);
     }
 }
@@ -132,11 +135,12 @@ async function postResourceByAttribute(vid, vkey, scanReport) {
             body: scanReport,
         });
         const data = await response.json();
+        console.log(`Data received from postResourceByAttribute: ${JSON.stringify(data)}`);
         core.info(`Scan report response: ${JSON.stringify(data)}`);
         return data;
     }
     catch (error) {
-        console.log("error in postResourceByAttribute", error);
+        console.log('error in postResourceByAttribute', error);
         throw new Error(`Failed to post resource: ${error}`);
     }
 }

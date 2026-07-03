@@ -42,10 +42,12 @@ export async function getResourceByAttribute<T>(vid: string, vkey: string, resou
     }),
   };
   const appUrl = `https://${host}${resourceUri}${urlQueryParams}`;
+  console.log(`******${host},${resourceUri},${urlQueryParams}`);
+  console.log(`*****Fetching resource from URL: ${appUrl}`);
   try {
     const response = await fetch(appUrl, { headers });
     const data = await response.json();
-    console.log(`Data received from getResourceByAttribute: ${JSON.stringify(data)}`);
+    console.log(`*****Data received from getResourceByAttribute: ${JSON.stringify(data,null,2)}`);
     return data as T;
   } catch (error) {
     console.log('error in getResourceByAttribute', error);
