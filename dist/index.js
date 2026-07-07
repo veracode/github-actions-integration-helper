@@ -100510,6 +100510,7 @@ async function getResourceByAttribute(vid, vkey, resource) {
     try {
         const response = await fetch(appUrl, { headers });
         const data = await response.json();
+        console.log('*****ResponseData', data);
         console.log(`*****Data received from getResourceByAttribute: ${JSON.stringify(data, null, 2)}`);
         return data;
     }
