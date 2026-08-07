@@ -228,8 +228,10 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
     status: Checks.Status.Completed,
   };
 
+  const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
   const octokit = new Octokit({
     auth: inputs.token,
+    baseUrl: baseUrl
   });
 
   // When the action is preparePolicyResults, need to make sure token,

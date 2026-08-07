@@ -223,8 +223,10 @@ async function preparePipelineResults(inputs) {
         check_run_id: inputs.check_run_id,
         status: Checks.Status.Completed,
     };
+    const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
     const octokit = new rest_1.Octokit({
         auth: inputs.token,
+        baseUrl: baseUrl
     });
     if (!(0, inputs_1.vaildateScanResultsActionInput)(inputs)) {
         core.setFailed('token, check_run_id and source_repository are required.');

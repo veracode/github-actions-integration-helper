@@ -161,8 +161,10 @@ async function validateVeracodeApiCreds(inputs) {
         owner: repo[0],
         repo: repo[1],
     };
+    const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
     const octokit = new rest_1.Octokit({
         auth: inputs.token,
+        baseUrl: baseUrl
     });
     const checkStatic = {
         owner: ownership.owner,
@@ -222,8 +224,10 @@ async function validatePolicyName(inputs) {
         owner: repo[0],
         repo: repo[1],
     };
+    const baseUrl = process.env.GITHUB_API_URL || 'https://api.github.com';
     const octokit = new rest_1.Octokit({
         auth: inputs.token,
+        baseUrl: baseUrl
     });
     const checkStatic = {
         owner: ownership.owner,
