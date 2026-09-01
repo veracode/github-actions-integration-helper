@@ -7,6 +7,7 @@ export declare enum Actions {
     RemoveSandbox = "removeSandbox",
     ValidateVeracodeApiCreds = "validateVeracodeApiCreds",
     ValidatePolicyName = "validatePolicyName",
+    ValidateIACPolicyName = "validateIACPolicyName",
     registerBuild = "registerBuild",
     trimSandboxes = "trim-sandboxes"
 }

@@ -27,14 +27,14 @@ export async function getApplicationByName(
     if (applications.length === 0) { // no application with the given name was found
       core.warning(`No application found with name ${appname}`);
       throw new Error(`No application found with name ${appname}`);
-    } 
-    
+    }
+
     const filteredApplications = applications.filter(app => app.profile?.name === appname);
     if (filteredApplications.length === 0) { // no application with the exact given name was found
       core.warning(`No application found with exact name ${JSON.stringify(appname)}. Returning the first application from the list in the original API query.`);
       return applications[0];
     } else if (filteredApplications.length > 1) {
-      core.warning(`Multiple applications (${filteredApplications.length}) found with exact name ${JSON.stringify(appname)}. Returning the first application from the filtered list.`);  
+      core.warning(`Multiple applications (${filteredApplications.length}) found with exact name ${JSON.stringify(appname)}. Returning the first application from the filtered list.`);
     } else { // exactly one application with the exact given name was found
       if (applications.length > 1) {
         core.info(`One application found with exact name ${JSON.stringify(appname)}. While there were ${JSON.stringify(applications.length)} applications starting with ${JSON.stringify(appname)}.`);
@@ -43,21 +43,21 @@ export async function getApplicationByName(
       }
     }
     return filteredApplications[0];
-    
+
   } catch (error) {
     throw error;
   }
 }
 
-async function getAppGUIDByAppName(inputs: Inputs) : Promise<any> {
-  if(!vaildateApplicationProfileInput(inputs)) {
+async function getAppGUIDByAppName(inputs: Inputs): Promise<any> {
+  if (!vaildateApplicationProfileInput(inputs)) {
     core.setFailed('Application Profile name is required.');
   }
   const appname = inputs.appname;
   const vid = inputs.vid;
   const vkey = inputs.vkey;
 
-  let application:VeracodeApplication.Application;
+  let application: VeracodeApplication.Application;
 
   try {
     application = await getApplicationByName(appname, vid, vkey);
@@ -72,7 +72,7 @@ async function getAppGUIDByAppName(inputs: Inputs) : Promise<any> {
 }
 
 export async function removeSandbox(inputs: Inputs): Promise<void> {
-  if(!vaildateRemoveSandboxInput(inputs)) {
+  if (!vaildateRemoveSandboxInput(inputs)) {
     core.setFailed('sandboxname is required.');
   }
 
@@ -96,7 +96,7 @@ export async function removeSandbox(inputs: Inputs): Promise<void> {
     core.setFailed(`No sandbox found with name ${sandboxName}`);
     return;
   }
-  
+
   try {
     const removeSandboxResource = {
       resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
@@ -111,8 +111,8 @@ export async function removeSandbox(inputs: Inputs): Promise<void> {
 }
 
 async function getSandboxesByApplicationGuid(
-  appGuid: string, 
-  vid: string, 
+  appGuid: string,
+  vid: string,
   vkey: string
 ): Promise<VeracodeApplication.Sandbox[]> {
   try {
@@ -304,6 +304,92 @@ export async function validatePolicyName(inputs: Inputs): Promise<void> {
   }
 }
 
+// This function validates the Veracode Policy name for IAC scans. It checks if the policy name is provided and if it exists in Veracode. If the policy name is missing or invalid, it creates annotations and updates the GitHub check run accordingly.
+export async function validateIACPolicyName(inputs: Inputs): Promise<void> {
+  const octokit = new Octokit({
+    auth: inputs.token,
+  });
+  const repo = inputs.source_repository.split('/');
+
+  const ownership = {
+    owner: repo[0],
+    repo: repo[1],
+  };
+  const checkStatic: Checks.ChecksStatic = {
+    owner: ownership.owner,
+    repo: ownership.repo,
+    check_run_id: inputs.check_run_id,
+    status: Checks.Status.Completed,
+  };
+  try {
+    const annotations: Checks.Annotation[] = [];
+    if (!inputs.policyname) {
+      core.warning('Missing Veracode Policy name in the config.')
+
+      annotations.push({
+        path: inputs.path,
+        start_line: inputs.start_line,
+        end_line: inputs.end_line,
+        annotation_level: 'warning',
+        title: 'Missing Veracode Policy name in the config.',
+        message: 'Please provide the policy name provided in the config file.',
+      });
+
+      await updateChecks(
+        octokit,
+        checkStatic,
+        Checks.Conclusion.Neutral,
+        annotations,
+        'Please check the policy name provided in the config file.',
+      );
+    } else {
+      core.info(`Validating Veracode Policy name ${inputs.policyname} for IAC scan.`);
+      const getPolicyResource = {
+        resourceUri: appConfig.api.veracode.policyUri,
+        queryAttribute: 'name',
+        queryValue: encodeURIComponent(inputs.policyname),
+        queryAttribute1: 'name_exact',
+        queryValue1: true,
+      };
+
+      const applicationResponse: VeracodeApplication.policyResultsData =
+        await http.getResourceByAttribute<VeracodeApplication.policyResultsData>(inputs.vid, inputs.vkey, getPolicyResource);
+
+      core.setOutput('total_elements', applicationResponse?.page?.total_elements);
+      if (applicationResponse && applicationResponse?.page?.total_elements === 0) {
+        core.setFailed(`Invalid Veracode Policy name ${inputs.policyname}.`);
+        annotations.push({
+          path: inputs.path,
+          start_line: inputs.start_line,
+          end_line: inputs.end_line,
+          annotation_level: 'failure',
+          title: 'Invalid Veracode Policy name',
+          message: 'Please check the policy name provided in the config file.',
+        });
+
+        await updateChecks(
+          octokit,
+          checkStatic,
+          Checks.Conclusion.Failure,
+          annotations,
+          'Please check the policy name provided in the config file.',
+        );
+        process.exit(1);
+      }
+    }
+  } catch (error) {
+    core.debug(`Error while validating invalid policy name: ${error}`);
+    await updateChecks(
+      octokit,
+      checkStatic,
+      Checks.Conclusion.Failure,
+      [],
+      'Error while validating policy name.',
+    );
+    throw error;
+  }
+}
+
 export async function registerBuild(inputs: Inputs): Promise<void> {
   const filePath = 'workflow-metadata.json';
   const artifactName = 'workflow-metadata';
@@ -319,11 +405,11 @@ export async function registerBuild(inputs: Inputs): Promise<void> {
     let artifactClient;
 
     if (inputs.platformType === 'ENTERPRISE') {
-        artifactClient = artifactV1.create();
-        core.info(`Initialized the artifact object using version V1.`);
+      artifactClient = artifactV1.create();
+      core.info(`Initialized the artifact object using version V1.`);
     } else {
-        artifactClient = new DefaultArtifactClient();
-        core.info(`Initialized the artifact object using version V2.`);
+      artifactClient = new DefaultArtifactClient();
+      core.info(`Initialized the artifact object using version V2.`);
     }
     const metadata = {
       'check_run_type': inputs.event_type,
@@ -358,16 +444,16 @@ export async function trimSandboxesFromApplicationProfile(inputs: Inputs): Promi
   }
 
   // Sort sandboxes by their modified field => which is the last scan time
-  let sortedSandboxes = sandboxes.sort((sandboxA,sandboxB) => {
-            let retVal = sandboxA.modified > sandboxB.modified ;
-            return (retVal ? 1 : -1);
-        });
+  let sortedSandboxes = sandboxes.sort((sandboxA, sandboxB) => {
+    let retVal = sandboxA.modified > sandboxB.modified;
+    return (retVal ? 1 : -1);
+  });
 
   if (core.isDebug()) {
     core.info('Date match Sandboxes from oldest to newest:');
     core.info('===========================================');
-    sortedSandboxes.forEach((sandbox,i) => {
-        core.info(`[${i}] - ${JSON.stringify(sandbox.name)} => ${sandbox.modified}`);
+    sortedSandboxes.forEach((sandbox, i) => {
+      core.info(`[${i}] - ${JSON.stringify(sandbox.name)} => ${sandbox.modified}`);
     });
     core.info('-------------------------------------------');
   }
@@ -376,31 +462,31 @@ export async function trimSandboxesFromApplicationProfile(inputs: Inputs): Promi
   const keep_size = inputs.trim_to_size;
   let sandboxesToDelete = [];
 
-  if (keep_size>=total_sb_size){
+  if (keep_size >= total_sb_size) {
     // Nothing to delete
     core.info(`Total sandboxes [${total_sb_size}] are equal or less than the trim_to_size input [${JSON.stringify(keep_size)}]. Nothing to delete`);
     return;
   } else {
-    const number_to_delete = total_sb_size-keep_size;
-    sandboxesToDelete = sortedSandboxes.slice(0,number_to_delete);
+    const number_to_delete = total_sb_size - keep_size;
+    sandboxesToDelete = sortedSandboxes.slice(0, number_to_delete);
   }
 
   core.info('Starting to delete sandboxes');
   const deletedSandboxNames: string[] = [];
-  await Promise.all(sandboxesToDelete.map(async (sandbox,i) => {
+  await Promise.all(sandboxesToDelete.map(async (sandbox, i) => {
     core.info(`[${i}] - ${JSON.stringify(sandbox.name)} => ${sandbox.modified}, ${sandbox.guid}`);
-      const removeSandboxResource = {
-        resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
-        resourceId: sandbox.guid,
-      };
-      try {
-        await http.deleteResourceById(vid, vkey, removeSandboxResource);
-        core.info(`Sandbox '${JSON.stringify(sandbox.name)}' with GUID [${JSON.stringify(sandbox.guid)}] deleted`);
-        deletedSandboxNames.push(`'${sandbox.name}' (GUID:${sandbox.guid})`);
-      } catch (error) {
-        core.warning(`Error removing sandbox:${error}`);
-        core.setFailed(`Error removing sandbox ${sandbox.name}`);
-      }
+    const removeSandboxResource = {
+      resourceUri: appConfig.api.veracode.sandboxUri.replace('${appGuid}', appGuid),
+      resourceId: sandbox.guid,
+    };
+    try {
+      await http.deleteResourceById(vid, vkey, removeSandboxResource);
+      core.info(`Sandbox '${JSON.stringify(sandbox.name)}' with GUID [${JSON.stringify(sandbox.guid)}] deleted`);
+      deletedSandboxNames.push(`'${sandbox.name}' (GUID:${sandbox.guid})`);
+    } catch (error) {
+      core.warning(`Error removing sandbox:${error}`);
+      core.setFailed(`Error removing sandbox ${sandbox.name}`);
+    }
   }));
 
   core.info(`Deleted Sandboxes names: ${JSON.stringify(deletedSandboxNames)}`);
