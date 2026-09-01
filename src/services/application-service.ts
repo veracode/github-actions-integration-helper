@@ -356,7 +356,7 @@ export async function validateIACPolicyName(inputs: Inputs): Promise<void> {
         await http.getResourceByAttribute<VeracodeApplication.policyResultsData>(inputs.vid, inputs.vkey, getPolicyResource);
 
       core.setOutput('total_elements', applicationResponse?.page?.total_elements);
-      if (applicationResponse && applicationResponse?.page?.total_elements > 0) {
+      if (applicationResponse && applicationResponse?.page?.total_elements === 0) {
         core.error(`Invalid Veracode Policy name ${inputs.policyname}.`);
         annotations.push({
           path: inputs.path,
