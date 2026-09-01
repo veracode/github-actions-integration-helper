@@ -338,7 +338,7 @@ export async function validateIACPolicyName(inputs: Inputs): Promise<void> {
       await updateChecks(
         octokit,
         checkStatic,
-        Checks.Conclusion.Success,
+        Checks.Conclusion.Neutral,
         annotations,
         'Please check the policy name provided in the config file.',
       );
