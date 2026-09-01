@@ -110212,7 +110212,7 @@ async function validateIACPolicyName(inputs) {
             const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
             core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
             if (applicationResponse && ((_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements) === 0) {
-                core.error(`Invalid Veracode Policy name ${inputs.policyname}.`);
+                core.setFailed(`Invalid Veracode Policy name ${inputs.policyname}.`);
                 annotations.push({
                     path: inputs.path,
                     start_line: inputs.start_line,
@@ -110222,6 +110222,7 @@ async function validateIACPolicyName(inputs) {
                     message: 'Please check the policy name provided in the config file.',
                 });
                 await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Please check the policy name provided in the config file.');
+                process.exit(1);
             }
         }
     }
