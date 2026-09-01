@@ -110198,7 +110198,7 @@ async function validateIACPolicyName(inputs) {
                 title: 'Missing Veracode Policy name in the config.',
                 message: 'Please provide the policy name provided in the config file.',
             });
-            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Success, annotations, 'Please check the policy name provided in the config file.');
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Neutral, annotations, 'Please check the policy name provided in the config file.');
         }
         else {
             core.info(`Validating Veracode Policy name ${inputs.policyname} for IAC scan.`);
