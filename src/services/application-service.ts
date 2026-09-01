@@ -357,7 +357,7 @@ export async function validateIACPolicyName(inputs: Inputs): Promise<void> {
 
       core.setOutput('total_elements', applicationResponse?.page?.total_elements);
       if (applicationResponse && applicationResponse?.page?.total_elements === 0) {
-        core.error(`Invalid Veracode Policy name ${inputs.policyname}.`);
+        core.setFailed(`Invalid Veracode Policy name ${inputs.policyname}.`);
         annotations.push({
           path: inputs.path,
           start_line: inputs.start_line,
@@ -374,6 +374,7 @@ export async function validateIACPolicyName(inputs: Inputs): Promise<void> {
           annotations,
           'Please check the policy name provided in the config file.',
         );
+        process.exit(1);
       }
     }
   } catch (error) {
