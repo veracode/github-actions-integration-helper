@@ -47,13 +47,13 @@ async function preparePipelineResultsNonWorkflowApp(inputs: Inputs): Promise<num
   try {
     const data = await fs.readFile(pipeline_results_file, 'utf-8');
     veracodePipelineResult = JSON.parse(data);
-    findingsArray = veracodePipelineResult.findings;
+    findingsArray = veracodePipelineResult.findings || [];
     if (pipelineScanFlawFilter.includes('policy'))
       filteredPipelineFinding = findingsArray;
     else {
       const filteredData = await fs.readFile(filtered_pipeline_results_file, 'utf-8');
       filteredVeracodePipelineResult = JSON.parse(filteredData);
-      filteredPipelineFinding = filteredVeracodePipelineResult.findings;
+      filteredPipelineFinding = filteredVeracodePipelineResult.findings || [];
     }
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);
