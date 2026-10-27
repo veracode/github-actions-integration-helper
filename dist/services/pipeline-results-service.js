@@ -64,13 +64,13 @@ async function preparePipelineResultsNonWorkflowApp(inputs) {
     try {
         const data = await fs.readFile(pipeline_results_file, 'utf-8');
         veracodePipelineResult = JSON.parse(data);
-        findingsArray = veracodePipelineResult.findings;
+        findingsArray = veracodePipelineResult.findings || [];
         if (pipelineScanFlawFilter.includes('policy'))
             filteredPipelineFinding = findingsArray;
         else {
             const filteredData = await fs.readFile(filtered_pipeline_results_file, 'utf-8');
             filteredVeracodePipelineResult = JSON.parse(filteredData);
-            filteredPipelineFinding = filteredVeracodePipelineResult.findings;
+            filteredPipelineFinding = filteredVeracodePipelineResult.findings || [];
         }
     }
     catch (error) {
@@ -236,7 +236,10 @@ async function preparePipelineResults(inputs) {
     try {
         const data = await fs.readFile(inputs.filtered_results_file, 'utf-8');
         const parsedData = JSON.parse(data);
-        findingsArray = parsedData.findings;
+        findingsArray = parsedData.findings || [];
+        if (!parsedData.findings) {
+            core.info('No vulnerabilities found in scan results');
+        }
         veracodePipelineResult = JSON.parse(data);
     }
     catch (error) {
@@ -246,6 +249,9 @@ async function preparePipelineResults(inputs) {
         return;
     }
     core.info(`Pipeline findings: ${findingsArray.length}`);
+    findingsArray.forEach((finding) => {
+        core.debug(`VeracodePipelineResult finding: ${JSON.stringify(finding, null, 2)}`);
+    });
     const filePath = 'mitigated_' + inputs.filtered_results_file;
     const artifactName = 'Veracode Pipeline-Scan Results - ' + inputs.filtered_results_file + ' - Mitigated findings';
     const rootDirectory = process.cwd();
@@ -301,14 +307,18 @@ async function preparePipelineResults(inputs) {
         });
     }
     core.info(`Mitigated policy findings: ${JSON.stringify(policyFindingsToExlcude.length)}`);
+    policyFindingsToExlcude.forEach((finding) => {
+        core.debug(`policyFindingsToExlcude finding: ${JSON.stringify(finding, null, 2)}`);
+    });
     const filteredFindingsArray = findingsArray.filter((finding) => {
         return !policyFindingsToExlcude.some((mitigatedFinding) => {
-            if (mitigatedFinding.finding_details.file_path.charAt(0) === '/') {
+            var _a, _b, _c, _d, _e, _f, _g, _h, _j, _k;
+            if (((_b = (_a = mitigatedFinding === null || mitigatedFinding === void 0 ? void 0 : mitigatedFinding.finding_details) === null || _a === void 0 ? void 0 : _a.file_path) === null || _b === void 0 ? void 0 : _b.charAt(0)) === '/') {
                 mitigatedFinding.finding_details.file_path = mitigatedFinding.finding_details.file_path.substring(1);
             }
-            return (finding.files.source_file.file === mitigatedFinding.finding_details.file_path &&
-                +finding.cwe_id === mitigatedFinding.finding_details.cwe.id &&
-                Math.abs(finding.files.source_file.line - mitigatedFinding.finding_details.file_line_number) <= LINE_NUMBER_SLOP);
+            return (((_d = (_c = finding === null || finding === void 0 ? void 0 : finding.files) === null || _c === void 0 ? void 0 : _c.source_file) === null || _d === void 0 ? void 0 : _d.file) === ((_e = mitigatedFinding === null || mitigatedFinding === void 0 ? void 0 : mitigatedFinding.finding_details) === null || _e === void 0 ? void 0 : _e.file_path) &&
+                +(finding === null || finding === void 0 ? void 0 : finding.cwe_id) === ((_g = (_f = mitigatedFinding === null || mitigatedFinding === void 0 ? void 0 : mitigatedFinding.finding_details) === null || _f === void 0 ? void 0 : _f.cwe) === null || _g === void 0 ? void 0 : _g.id) &&
+                Math.abs(((_j = (_h = finding === null || finding === void 0 ? void 0 : finding.files) === null || _h === void 0 ? void 0 : _h.source_file) === null || _j === void 0 ? void 0 : _j.line) - ((_k = mitigatedFinding === null || mitigatedFinding === void 0 ? void 0 : mitigatedFinding.finding_details) === null || _k === void 0 ? void 0 : _k.file_line_number)) <= LINE_NUMBER_SLOP);
         });
     });
     try {

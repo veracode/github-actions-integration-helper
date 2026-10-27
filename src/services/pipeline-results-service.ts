@@ -251,7 +251,10 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   try {
     const data = await fs.readFile(inputs.filtered_results_file, 'utf-8');
     const parsedData: VeracodePipelineResult.ResultsData = JSON.parse(data);
-    findingsArray = parsedData.findings;
+    findingsArray = parsedData.findings || [];
+    if (!parsedData.findings) {
+      core.info('No vulnerabilities found in scan results');
+    }
     veracodePipelineResult = JSON.parse(data);
   } catch (error) {
     core.debug(`Error reading or parsing filtered_results.json:${error}`);

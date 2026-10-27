@@ -40,6 +40,7 @@ exports.getApplicationByName = getApplicationByName;
 exports.removeSandbox = removeSandbox;
 exports.validateVeracodeApiCreds = validateVeracodeApiCreds;
 exports.validatePolicyName = validatePolicyName;
+exports.validateIACPolicyName = validateIACPolicyName;
 exports.registerBuild = registerBuild;
 exports.trimSandboxesFromApplicationProfile = trimSandboxesFromApplicationProfile;
 const core = __importStar(require("@actions/core"));
@@ -280,6 +281,68 @@ async function validatePolicyName(inputs) {
     catch (error) {
         core.debug(`Error while validating invalid policy name: ${error}`);
         await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], 'Error while validating policy name.');
+        throw error;
+    }
+}
+async function validateIACPolicyName(inputs) {
+    var _a, _b;
+    const octokit = new rest_1.Octokit({
+        auth: inputs.token,
+    });
+    const repo = inputs.source_repository.split('/');
+    const ownership = {
+        owner: repo[0],
+        repo: repo[1],
+    };
+    const checkStatic = {
+        owner: ownership.owner,
+        repo: ownership.repo,
+        check_run_id: inputs.check_run_id,
+        status: Checks.Status.Completed,
+    };
+    try {
+        const annotations = [];
+        if (!inputs.policyname) {
+            core.warning('Missing Veracode Policy name in the config.');
+            annotations.push({
+                path: inputs.path,
+                start_line: inputs.start_line,
+                end_line: inputs.end_line,
+                annotation_level: 'warning',
+                title: 'Missing Veracode Policy name in the config.',
+                message: 'Please provide the policy name provided in the config file.',
+            });
+            await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Neutral, annotations, 'Please check the policy name provided in the config file.');
+        }
+        else {
+            core.info(`Validating Veracode Policy name ${inputs.policyname} for IAC scan.`);
+            const getPolicyResource = {
+                resourceUri: app_config_1.default.api.veracode.policyUri,
+                queryAttribute: 'name',
+                queryValue: encodeURIComponent(inputs.policyname),
+                queryAttribute1: 'name_exact',
+                queryValue1: true,
+            };
+            const applicationResponse = await http.getResourceByAttribute(inputs.vid, inputs.vkey, getPolicyResource);
+            core.setOutput('total_elements', (_a = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _a === void 0 ? void 0 : _a.total_elements);
+            if (applicationResponse && ((_b = applicationResponse === null || applicationResponse === void 0 ? void 0 : applicationResponse.page) === null || _b === void 0 ? void 0 : _b.total_elements) === 0) {
+                core.setFailed(`Invalid Veracode Policy name ${inputs.policyname}.`);
+                annotations.push({
+                    path: inputs.path,
+                    start_line: inputs.start_line,
+                    end_line: inputs.end_line,
+                    annotation_level: 'failure',
+                    title: 'Invalid Veracode Policy name',
+                    message: 'Please check the policy name provided in the config file.',
+                });
+                await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, annotations, 'Please check the policy name provided in the config file.');
+                process.exit(1);
+            }
+        }
+    }
+    catch (error) {
+        core.debug(`Error while validating policy ${inputs.policyname} : ${error}`);
+        await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], `Error while validating policy ${inputs.policyname}.`);
         throw error;
     }
 }

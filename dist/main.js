@@ -61,6 +61,9 @@ async function run() {
         case 'validatePolicyName':
             await applicationService.validatePolicyName(inputs);
             break;
+        case 'validateIACPolicyName':
+            await applicationService.validateIACPolicyName(inputs);
+            break;
         case 'registerBuild':
             await applicationService.registerBuild(inputs);
             break;
@@ -68,6 +71,6 @@ async function run() {
             await applicationService.trimSandboxesFromApplicationProfile(inputs);
             break;
         default:
-            core.setFailed(`Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds, validatePolicyName, registerBuild, and trim-sandboxes.`);
+            core.setFailed(`Invalid action: ${inputs.action}. Allowed actions are: getPolicyNameByProfileName, preparePipelineResults, preparePolicyResults, removeSandbox, validateVeracodeApiCreds, validatePolicyName, validateIACPolicyName, registerBuild, and trim-sandboxes.`);
     }
 }

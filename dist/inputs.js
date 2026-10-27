@@ -9,6 +9,7 @@ var Actions;
     Actions["RemoveSandbox"] = "removeSandbox";
     Actions["ValidateVeracodeApiCreds"] = "validateVeracodeApiCreds";
     Actions["ValidatePolicyName"] = "validatePolicyName";
+    Actions["ValidateIACPolicyName"] = "validateIACPolicyName";
     Actions["registerBuild"] = "registerBuild";
     Actions["trimSandboxes"] = "trim-sandboxes";
 })(Actions || (exports.Actions = Actions = {}));
