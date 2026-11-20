@@ -101103,7 +101103,7 @@ async function preparePipelineResults(inputs) {
         core.info('Pipeline findings after filtering, continue to update the github check status');
         const annotations = getAnnotations(filteredFindingsArray, javaMaven);
         const maxNumberOfAnnotations = 50;
-        if (filteredFindingsArray.length <= policyFindings.length && inputs.fail_checks_on_policy == true) {
+        if ((policyFindings.length === 0 || filteredFindingsArray.length <= policyFindings.length) && inputs.fail_checks_on_policy == true) {
             core.setFailed('Vulneribilities detected in the Repository');
         }
         for (let index = 0; index < annotations.length / maxNumberOfAnnotations; index++) {
