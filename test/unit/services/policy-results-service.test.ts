@@ -102,7 +102,28 @@ describe('policy-results-service', () => {
         expected.summary,
       );
       // should have been called with 2 annotations
-      expect(mockUpdateChecks.mock.calls[0][3]).toHaveLength(2);
+      const annotations = mockUpdateChecks.mock.calls[0][3];
+      expect(annotations).toHaveLength(2);
+
+      expect(annotations[0].message).toMatch(/^\[Very High\] Filename: com\/scalesec\/vulnado\/Cowsay\.java/);
+      expect(annotations[0]).toEqual({
+        path: 'com/scalesec/vulnado/Cowsay.java',
+        start_line: 16,
+        end_line: 16,
+        annotation_level: 'warning',
+        title: "Improper Neutralization of Special Elements used in an OS Command ('OS Command Injection')",
+        message: expect.any(String),
+      });
+
+      expect(annotations[1].message).toMatch(/^\[High\] Filename: com\/scalesec\/vulnado\/User\.java/);
+      expect(annotations[1]).toEqual({
+        path: 'com/scalesec/vulnado/User.java',
+        start_line: 49,
+        end_line: 49,
+        annotation_level: 'warning',
+        title: "Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')",
+        message: expect.any(String),
+      });
 
       expect(mockReadFile).toHaveBeenCalledWith('policy_flaws.json', 'utf-8');
       expect(mockReadFile).toHaveBeenCalledWith('results_url.txt', 'utf-8');

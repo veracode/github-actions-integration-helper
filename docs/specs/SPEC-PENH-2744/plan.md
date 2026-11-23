@@ -65,7 +65,7 @@ AC ids are positional (the spec does not number them): AC-1 policy prefix, AC-2 
   - `test/unit/services/policy-results-service.test.ts` (findings-present case): annotations from `mockUpdateChecks.mock.calls[0][3]` — message[0] starts with `[Very High] Filename: `, message[1] starts with `[High] Filename: `; `title`, `path`, `start_line`, `end_line`, `annotation_level` equal the pre-change values derived from the fixture; each annotation has exactly the keys `path,start_line,end_line,annotation_level,title,message` (AC-6).
 - Edge cases: missing severity on policy path covered by T1 helper + T3 annotation test (same helper call).
 - Depends on: T0, T1
-- Status: not started
+- Status: done
 
 ### T3 — Pipeline annotation severity prefix
 - Covers: AC-2, AC-3, AC-5, AC-6

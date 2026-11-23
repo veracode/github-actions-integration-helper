@@ -8,6 +8,7 @@ import { updateChecks } from './check-service';
 import appConfig from '../app-config';
 import * as VeracodeApplication from '../namespaces/VeracodeApplication';
 import * as http from '../api/http-request';
+import { severityPrefix } from '../utils/severity';
 
 export async function preparePolicyResults(inputs: Inputs): Promise<void> {
   const octokit = new Octokit({
@@ -143,7 +144,7 @@ function getAnnotations(policyFindings: VeracodePolicyResult.Finding[], javaMave
       .replace(/<\/span>/g, '');
     let filePath = element.finding_details.file_path;
     if (filePath.startsWith('/')) filePath = filePath.substring(1);
-    const message = `Filename: ${filePath}\nLine: ${element.finding_details.file_line_number}\nCWE: ${element.finding_details.cwe.id} (${element.finding_details.cwe.name})\n\n${displayMessage}`;
+    const message = `${severityPrefix(element.finding_details.severity)}Filename: ${filePath}\nLine: ${element.finding_details.file_line_number}\nCWE: ${element.finding_details.cwe.id} (${element.finding_details.cwe.name})\n\n${displayMessage}`;
     annotations.push({
       path: `${filePath}`,
       start_line: element.finding_details.file_line_number,
