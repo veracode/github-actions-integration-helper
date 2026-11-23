@@ -86,7 +86,7 @@ AC ids are positional (the spec does not number them): AC-1 policy prefix, AC-2 
 - Tests (written first): none (build artifact); verify `grep -c severityPrefix dist/index.js` > 0.
 - Edge cases: `node_modules` absent — run `pnpm install --frozen-lockfile` first.
 - Depends on: T2, T3
-- Status: not started
+- Status: done
 
 ## Test command
 

@@ -110227,8 +110227,8 @@ async function validateIACPolicyName(inputs) {
         }
     }
     catch (error) {
-        core.debug(`Error while validating invalid policy name: ${error}`);
-        await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], 'Error while validating policy name.');
+        core.debug(`Error while validating policy ${inputs.policyname} : ${error}`);
+        await (0, check_service_1.updateChecks)(octokit, checkStatic, Checks.Conclusion.Failure, [], `Error while validating policy ${inputs.policyname}.`);
         throw error;
     }
 }
@@ -110484,6 +110484,7 @@ var __importStar = (this && this.__importStar) || (function () {
 })();
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 exports.preparePipelineResults = preparePipelineResults;
+exports.getAnnotations = getAnnotations;
 const core = __importStar(__nccwpck_require__(59999));
 const rest_1 = __nccwpck_require__(23923);
 const fs = __importStar(__nccwpck_require__(91943));
@@ -110492,6 +110493,7 @@ const inputs_1 = __nccwpck_require__(88052);
 const check_service_1 = __nccwpck_require__(56844);
 const application_service_1 = __nccwpck_require__(65506);
 const findings_service_1 = __nccwpck_require__(73668);
+const severity_1 = __nccwpck_require__(19744);
 const LINE_NUMBER_SLOP = 3;
 function printResults(numberOfPipelineScanFindings, numberOfMitigatedFlaws, numberOfRemainingFlaws) {
     core.info(`Pipeline findings: ${numberOfPipelineScanFindings}`);
@@ -110834,7 +110836,8 @@ function getAnnotations(pipelineFindings, javaMaven) {
             .replace(/<span>/g, '')
             .replace(/<\/span> /g, '\n')
             .replace(/<\/span>/g, '');
-        const message = `Filename: ${element.files.source_file.file}\n` +
+        const message = (0, severity_1.severityPrefix)(element.severity) +
+            `Filename: ${element.files.source_file.file}\n` +
             `Line: ${element.files.source_file.line}\n` +
             `CWE: ${element.cwe_id} (${element.issue_type})\n\n${displayMessage}`;
         annotations.push({
@@ -110904,6 +110907,7 @@ const Checks = __importStar(__nccwpck_require__(65337));
 const check_service_1 = __nccwpck_require__(56844);
 const app_config_1 = __importDefault(__nccwpck_require__(63605));
 const http = __importStar(__nccwpck_require__(19328));
+const severity_1 = __nccwpck_require__(19744);
 async function preparePolicyResults(inputs) {
     const octokit = new rest_1.Octokit({
         auth: inputs.token,
@@ -110998,7 +111002,7 @@ function getAnnotations(policyFindings, javaMaven) {
         let filePath = element.finding_details.file_path;
         if (filePath.startsWith('/'))
             filePath = filePath.substring(1);
-        const message = `Filename: ${filePath}\nLine: ${element.finding_details.file_line_number}\nCWE: ${element.finding_details.cwe.id} (${element.finding_details.cwe.name})\n\n${displayMessage}`;
+        const message = `${(0, severity_1.severityPrefix)(element.finding_details.severity)}Filename: ${filePath}\nLine: ${element.finding_details.file_line_number}\nCWE: ${element.finding_details.cwe.id} (${element.finding_details.cwe.name})\n\n${displayMessage}`;
         annotations.push({
             path: `${filePath}`,
             start_line: element.finding_details.file_line_number,
@@ -111107,6 +111111,25 @@ async function getPolicyNameByProfileName(inputs) {
         core.info(`No application found with name ${appname}`);
         core.setOutput('policy_name', '');
     }
+}
+
+
+/***/ }),
+
+/***/ 19744:
+/***/ ((__unused_webpack_module, exports) => {
+
+"use strict";
+
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+exports.LABELS = void 0;
+exports.severityPrefix = severityPrefix;
+exports.LABELS = ['Informational', 'Very Low', 'Low', 'Medium', 'High', 'Very High'];
+function severityPrefix(s) {
+    if (typeof s !== 'number' || !Number.isInteger(s) || s < 0 || s > 5) {
+        return '';
+    }
+    return `[${exports.LABELS[s]}] `;
 }
 
 
