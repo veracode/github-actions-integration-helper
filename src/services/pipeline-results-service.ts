@@ -8,6 +8,7 @@ import {Inputs, vaildateScanResultsActionInput} from '../inputs';
 import {updateChecks} from './check-service';
 import {getApplicationByName} from './application-service';
 import {getApplicationFindings} from './findings-service';
+import {severityPrefix} from '../utils/severity';
 
 const LINE_NUMBER_SLOP = 3; //adjust to allow for line number movement
 
@@ -425,7 +426,7 @@ export async function preparePipelineResults(inputs: Inputs): Promise<void> {
   }
 }
 
-function getAnnotations(pipelineFindings: VeracodePipelineResult.Finding[], javaMaven: boolean): Checks.Annotation[] {
+export function getAnnotations(pipelineFindings: VeracodePipelineResult.Finding[], javaMaven: boolean): Checks.Annotation[] {
   const annotations: Checks.Annotation[] = [];
   pipelineFindings.forEach(function (element) {
     if (javaMaven) {
@@ -442,6 +443,7 @@ function getAnnotations(pipelineFindings: VeracodePipelineResult.Finding[], java
       .replace(/<\/span> /g, '\n')
       .replace(/<\/span>/g, '');
     const message =
+      severityPrefix(element.severity) +
       `Filename: ${element.files.source_file.file}\n` +
       `Line: ${element.files.source_file.line}\n` +
       `CWE: ${element.cwe_id} (${element.issue_type})\n\n${displayMessage}`;

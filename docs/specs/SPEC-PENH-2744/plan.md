@@ -77,7 +77,7 @@ AC ids are positional (the spec does not number them): AC-1 policy prefix, AC-2 
   - same file: `missing severity` — finding with `severity` undefined → one annotation, message starts `Filename: `, path/lines/title intact, no throw.
 - Edge cases: `javaMaven=true` path rewrite untouched (not re-tested; unchanged code).
 - Depends on: T1
-- Status: not started
+- Status: done
 
 ### T4 — Rebuild dist bundle
 - Covers: AC-1, AC-2 (shipped action runs `dist/index.js`)
