@@ -22,4 +22,11 @@ export const policyResultsInput = {
   branch: '',
   event_type: '',
   issue_trigger_flow: '',
+  workflow_app: false,
+  line_number_slop: 0,
+  pipeline_scan_flaw_filter: '',
+  filtered_results_file: '',
+  gitRepositoryUrl: '',
+  trim_to_size: 0,
+  platformType: '',
 };
