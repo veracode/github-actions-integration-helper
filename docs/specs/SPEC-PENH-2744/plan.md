@@ -55,7 +55,7 @@ AC ids are positional (the spec does not number them): AC-1 policy prefix, AC-2 
   - same file: `returns empty for unknown` — undefined, null, -1, 6, 2.5, NaN → `''`.
 - Edge cases: string severity from untyped JSON (e.g. `'4'`) → `''` (not integer); documented, not coerced.
 - Depends on: none
-- Status: not started
+- Status: done
 
 ### T2 — Policy annotation severity prefix
 - Covers: AC-1, AC-5, AC-6
