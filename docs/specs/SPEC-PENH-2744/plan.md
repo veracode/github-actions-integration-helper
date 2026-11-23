@@ -66,6 +66,7 @@ AC ids are positional (the spec does not number them): AC-1 policy prefix, AC-2 
 - Edge cases: missing severity on policy path covered by T1 helper + T3 annotation test (same helper call).
 - Depends on: T0, T1
 - Status: done
+- Coverage waiver: 63.15% on src/services/policy-results-services.ts (floor 80%) waived by dev 2026-11-23 — pre-existing test debt (module never tested beyond REPO-711's 2 policy cases; no CI runs tests); every line this task changed is covered.
 
 ### T3 — Pipeline annotation severity prefix
 - Covers: AC-2, AC-3, AC-5, AC-6
@@ -78,6 +79,7 @@ AC ids are positional (the spec does not number them): AC-1 policy prefix, AC-2 
 - Edge cases: `javaMaven=true` path rewrite untouched (not re-tested; unchanged code).
 - Depends on: T1
 - Status: done
+- Coverage waiver: 7.81% on src/services/pipeline-results-service.ts (floor 80%) waived by dev 2026-11-23 — pre-existing test debt (module never tested beyond REPO-711's 2 policy cases; no CI runs tests); every line this task changed is covered.
 
 ### T4 — Rebuild dist bundle
 - Covers: AC-1, AC-2 (shipped action runs `dist/index.js`)
